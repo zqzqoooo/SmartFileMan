@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmartFileMan.App/SmartFileMan.App.csproj" />
+    <Project Path="src/SmartFileMan.Contracts/SmartFileMan.Contracts.csproj" />
+    <Project Path="src/SmartFileMan.Core/SmartFileMan.Core.csproj" />
+    <Project Path="src/SmartFileMan.Sdk/SmartFileMan.Sdk.csproj" />
+  </Folder>
+</Solution>
