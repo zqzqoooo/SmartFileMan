@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.Plugins.Basic.OrganizerView"
+             BackgroundColor="White">
+
+    <VerticalStackLayout Spacing="20" VerticalOptions="Center" HorizontalOptions="Center">
+        
+        <Label Text="📂" 
+               FontSize="80" 
+               HorizontalOptions="Center" />
+
+        <Label Text="智能归档大师"
+               FontSize="28"
+               FontAttributes="Bold"
+               HorizontalOptions="Center" 
+               TextColor="#333"/>
+
+        <Label Text="Data Provided by LiteDB"
+               FontSize="12"
+               TextColor="#999"
+               HorizontalOptions="Center" />
+
+        <Frame BackgroundColor="#E3F2FD" 
+               BorderColor="#2196F3"
+               CornerRadius="10"
+               Padding="30">
+            <VerticalStackLayout>
+                <Label Text="累计整理文件数" 
+                       HorizontalOptions="Center"
+                       TextColor="#1565C0"/>
+                <Label x:Name="CountLabel"
+                       Text="0"
+                       FontSize="48"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="#0D47A1"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Button Text="刷新数据" 
+                Clicked="OnRefreshClicked"
+                BackgroundColor="#2196F3"
+                TextColor="White"
+                CornerRadius="20"
+                WidthRequest="150"/>
+        
+    </VerticalStackLayout>
+</ContentView>

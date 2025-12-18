@@ -1,16 +1,26 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
+using SmartFileMan.App.Helpers;
 
-namespace SmartFileMan.App;
-
-public partial class App : Application
+namespace SmartFileMan.App
 {
-	public App()
-	{
-		InitializeComponent();
-	}
+    public partial class App : Application
+    {
+        private readonly AppShell _shell;
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+        // 构造函数注入 AppShell
+        public App(AppShell shell)
+        {
+            InitializeComponent();
+            _shell = shell;
+
+            // 【移除】不要在这里设置 MainPage = shell;
+        }
+
+        // 【新增】重写 CreateWindow 方法
+        protected override Window CreateWindow(IActivationState? activationState)
+        {
+            return new Window(_shell);
+        }
+    }
 }
