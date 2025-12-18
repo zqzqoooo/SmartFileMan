@@ -11,6 +11,6 @@ namespace SmartFileMan.Contracts
         /// 获取插件的主界面视图
         /// </summary>
         /// <returns>返回一个 View (比如 Grid, StackLayout, ContentView)</returns>
-        View GetMainView();
+        View GetView();
     }
 }

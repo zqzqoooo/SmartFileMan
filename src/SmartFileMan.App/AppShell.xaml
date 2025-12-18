@@ -4,52 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:SmartFileMan.App"
-    xmlns:contracts="clr-namespace:SmartFileMan.Contracts;assembly=SmartFileMan.Contracts"
     Title="SmartFileMan"
-    FlyoutBehavior="Flyout"
-    FlyoutBackgroundColor="{AppThemeBinding Light=#f3f3f3, Dark=#1f1f1f}">
-
-    <Shell.FlyoutContentTemplate>
-        <DataTemplate>
-            <Grid RowDefinitions="Auto, *" Padding="10">
-
-                <VerticalStackLayout Grid.Row="0" Spacing="5" Padding="0,20,0,20">
-                    <Label Text="Smart Manager" FontSize="20" FontAttributes="Bold" TextColor="#512BD4"/>
-                    <Label Text="v1.0.0" FontSize="12" TextColor="Gray"/>
-                </VerticalStackLayout>
-
-                <VerticalStackLayout Grid.Row="1" Spacing="10">
-                    <Label Text="已加载插件" FontSize="12" TextColor="Gray" FontAttributes="Bold"/>
-
-                    <CollectionView ItemsSource="{Binding Plugins}" SelectionMode="Single" SelectionChanged="OnPluginSelected">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="contracts:IPlugin">
-                                <Border StrokeThickness="0" BackgroundColor="Transparent" Padding="5">
-                                    <HorizontalStackLayout Spacing="10">
-                                        <BoxView Color="{Binding IsEnabled, Converter={StaticResource BoolToColorConverter}}" 
-                                                 WidthRequest="8" HeightRequest="8" CornerRadius="4" VerticalOptions="Center"/>
-
-                                        <VerticalStackLayout>
-                                            <Label Text="{Binding DisplayName}" FontSize="14"/>
-                                            <Label Text="{Binding Description}" FontSize="10" TextColor="Gray" LineBreakMode="TailTruncation"/>
-                                        </VerticalStackLayout>
-                                    </HorizontalStackLayout>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Grid>
-        </DataTemplate>
-    </Shell.FlyoutContentTemplate>
-
-    <ShellContent
-        Title="工作台"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
-
-    <Shell.Resources>
-        <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
-    </Shell.Resources>
+    FlyoutBehavior="Flyout">
 
 </Shell>
