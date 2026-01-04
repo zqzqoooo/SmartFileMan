@@ -1,10 +1,25 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Shell
+﻿<Shell
     x:Class="SmartFileMan.App.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:SmartFileMan.App"
     Title="SmartFileMan"
-    FlyoutBehavior="Flyout">
+    FlyoutBehavior="Flyout"
+    FlyoutBackgroundColor="{AppThemeBinding Light=#f0f0f0, Dark=#1f1f1f}">
+
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout Padding="20" BackgroundColor="#512BD4">
+            <Label Text="Smart Manager" TextColor="White" FontSize="20" FontAttributes="Bold"/>
+            <Label Text="v1.0.0" TextColor="White" FontSize="12"/>
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+
+    <FlyoutItem Title="工作台" Icon="dotnet_bot.png">
+        <ShellContent Title="主页" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
+    </FlyoutItem>
+
+    <MenuItem Text="插件管理" IconImageSource="dotnet_bot.png" Clicked="OnPluginManagerClicked" />
+    <MenuItem Text="设置" IconImageSource="dotnet_bot.png" Clicked="OnSettingsClicked" />
+    <MenuItem Text="退出" Clicked="OnExitClicked" />
 
 </Shell>

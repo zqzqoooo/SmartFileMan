@@ -1,4 +1,5 @@
-﻿using SmartFileMan.Contracts;
+﻿using SmartFileMan.App.Helpers;
+using SmartFileMan.Contracts;
 using SmartFileMan.Core.Services;
 using Microsoft.Maui.Controls;
 
@@ -19,7 +20,7 @@ namespace SmartFileMan.App
             InitializeComponent();
             _pluginManager = pluginManager;
 
-            // 加载侧边栏插件菜单
+            // 将 MainPage 的解析交给 DI
             // Load the sidebar plugin menu
             LoadPluginMenu();
         }
@@ -76,6 +77,27 @@ namespace SmartFileMan.App
                 item.Items.Add(tab);
                 this.Items.Add(item);
             }
+
+            // 将 MainPage 的解析交给 DI
+            Routing.RegisterRoute("MainPage", typeof(MainPage));
+            // 注册新页面路由
+            Routing.RegisterRoute(nameof(PluginManagementPage), typeof(PluginManagementPage));
+            Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
+        }
+
+        private async void OnPluginManagerClicked(object sender, EventArgs e)
+        {
+            await Current.GoToAsync(nameof(PluginManagementPage));
+        }
+
+        private async void OnSettingsClicked(object sender, EventArgs e)
+        {
+            await Current.GoToAsync(nameof(SettingsPage));
+        }
+
+        private void OnExitClicked(object sender, EventArgs e)
+        {
+            Application.Current?.Quit();
         }
     }
 }

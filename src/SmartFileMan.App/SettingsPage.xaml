@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.App.SettingsPage"
+             Title="设置">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="通用设置" FontSize="18" FontAttributes="Bold" />
+
+            <Frame Padding="15" BorderColor="LightGray">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="忽略的文件格式" FontAttributes="Bold" />
+                    <Label Text="以下扩展名的文件将被自动跳过 (例如 .tmp, .log)" FontSize="12" TextColor="Gray" />
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Entry x:Name="ExtEntry" Placeholder=".tmp" WidthRequest="100" />
+                        <Button Text="添加" Clicked="OnAddExtClicked" />
+                    </HorizontalStackLayout>
+
+                    <CollectionView x:Name="ExtList" HeightRequest="200">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*, Auto" Padding="5">
+                                    <Label Text="{Binding .}" VerticalOptions="Center" />
+                                    <Button Grid.Column="1" Text="删除" 
+                                            CommandParameter="{Binding .}"
+                                            Clicked="OnRemoveExtClicked" 
+                                            BackgroundColor="#FFEBEE" TextColor="Red" 
+                                            HeightRequest="30" Padding="10,0" FontSize="12"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame Padding="15" BorderColor="LightGray">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="开发者选项" FontAttributes="Bold" />
+                    <Label Text="仅供插件开发者使用" FontSize="12" TextColor="Gray" />
+                    
+                    <Grid ColumnDefinitions="*, Auto">
+                        <VerticalStackLayout>
+                            <Label Text="开发者模式" FontAttributes="Bold" />
+                            <Label Text="允许加载未签名的插件 (重启生效)" FontSize="12" TextColor="Gray" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" x:Name="DevModeSwitch" Toggled="OnDevModeToggled" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -30,6 +30,9 @@ namespace SmartFileMan.App
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "smartfileman.db");
             builder.Services.AddSingleton<LiteDatabase>(s => new LiteDatabase(dbPath));
 
+            // 1.5 设置服务 (SettingsService) - 新增
+            builder.Services.AddSingleton<ISettingsService, SettingsService>();
+
             // 2. 交互提供者 (Dialogs, Toasts)
             builder.Services.AddSingleton<IInteractionProvider, MauiInteractionProvider>();
 
@@ -41,8 +44,14 @@ namespace SmartFileMan.App
             // 依赖 LiteDatabase 和 SafeContext，负责为每个插件分配存储
             builder.Services.AddSingleton<PluginManager>();
 
-            // 5. 页面与 Shell
+            // 5. 文件管理器 (FileManager) - 新增
+            // 负责调度和安全移动
+            builder.Services.AddSingleton<FileManager>();
+
+            // 6. 页面与 Shell
             builder.Services.AddTransient<MainPage>();
+            builder.Services.AddTransient<PluginManagementPage>(); // 新增
+            builder.Services.AddTransient<SettingsPage>();         // 新增
             builder.Services.AddSingleton<AppShell>();
 
             return builder.Build();

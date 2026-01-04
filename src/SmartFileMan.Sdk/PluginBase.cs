@@ -12,7 +12,7 @@ namespace SmartFileMan.Sdk
     /// 插件的基类：提供安全上下文 (SafeContext) 和存储 (Storage) 的自动管理
     /// Base class for plugins: Provides automatic management of SafeContext and Storage
     /// </summary>
-    public abstract class PluginBase : IOrganizerPlugin
+    public abstract class PluginBase : IOrganizerPlugin, IFilePlugin
     {
         // --- 插件基础信息 / Basic Plugin Information ---
 
@@ -35,6 +35,32 @@ namespace SmartFileMan.Sdk
         // 插件启用状态
         // Whether the plugin is enabled
         public virtual bool IsEnabled { get; set; } = true;
+
+        // --- 新增：IFilePlugin 实现 / New: IFilePlugin Implementation ---
+
+        /// <summary>
+        /// 默认插件类型为通用
+        /// Default plugin type is General
+        /// </summary>
+        public virtual PluginType Type => PluginType.General;
+
+        /// <summary>
+        /// 阶段一：默认不做任何事
+        /// Phase 1: Do nothing by default
+        /// </summary>
+        public virtual Task OnFileDetectedAsync(IFileEntry file)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 阶段二：默认不参与竞价 (返回 null)
+        /// Phase 2: Do not bid by default (return null)
+        /// </summary>
+        public virtual Task<RouteProposal?> ProposeDestinationAsync(IFileEntry file)
+        {
+            return Task.FromResult<RouteProposal?>(null);
+        }
 
         // --- 核心能力 / Core Capabilities ---
 
@@ -82,6 +108,16 @@ namespace SmartFileMan.Sdk
         {
             if (Context == null) throw new InvalidOperationException("Plugin not initialized");
             await Context.MoveAsync(file, destinationFolder);
+        }
+
+        /// <summary>
+        /// 快捷删除方法 (移入回收站)
+        /// Shortcut method for deleting files (Move to Recycle Bin)
+        /// </summary>
+        protected async Task Delete(IFileEntry file)
+        {
+            if (Context == null) throw new InvalidOperationException("Plugin not initialized");
+            await Context.DeleteAsync(file);
         }
 
         /// <summary>

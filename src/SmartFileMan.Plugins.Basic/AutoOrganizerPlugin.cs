@@ -21,15 +21,46 @@ namespace SmartFileMan.Plugins.Basic
 
         // 插件显示名称
         // Display name of the plugin
-        public override string DisplayName => "📂 智能归档大师";
+        public override string DisplayName => "📂 智能归档大师 Smart Archiving Master";
 
         // 插件功能描述
         // Functional description of the plugin
-        public override string Description => "自动按扩展名归档文件，并记录整理总数。";
+        public override string Description => "自动按扩展名归档文件，并记录整理总数。Automatically archive files by extension and keep a record of the total sorted.";
 
         /// <summary>
-        /// 核心执行逻辑：按扩展名移动文件
-        /// Core execution logic: Move files by extension
+        /// 阶段二：竞价逻辑
+        /// Phase 2: Bidding logic
+        /// </summary>
+        public override Task<RouteProposal?> ProposeDestinationAsync(IFileEntry file)
+        {
+            // 获取文件扩展名并转为小写
+            // Get file extension and convert to lowercase
+            string ext = Path.GetExtension(file.FullPath).TrimStart('.').ToLower();
+
+            // 如果没有扩展名，归类为 "其他"
+            // If there is no extension, classify as "Others"
+            if (string.IsNullOrEmpty(ext)) ext = "其他 Others";
+
+            // 确定目标文件夹路径 (当前目录下的子文件夹)
+            // Determine destination folder path (subfolder in the current directory)
+            string destFolder = Path.Combine(Path.GetDirectoryName(file.FullPath) ?? "", ext);
+
+            // 构造提案：
+            // Construct proposal:
+            // 目标路径: destFolder
+            // Target path: destFolder
+            // 分数: 50 (基础分，表示我可以处理，但优先级不高)
+            // Score: 50 (Base score, indicates I can handle it, but priority is not high)
+            // 理由: "按扩展名归档"
+            // Reason: "Archive by extension"
+            var proposal = new RouteProposal(destFolder, 50, $"按扩展名 {ext} 归档");
+
+            return Task.FromResult<RouteProposal?>(proposal);
+        }
+
+        /// <summary>
+        /// 核心执行逻辑：按扩展名移动文件 (旧版兼容)
+        /// Core execution logic: Move files by extension (Legacy compatibility)
         /// </summary>
         /// <param name="files">待处理文件列表 / List of files to be processed</param>
         public override async Task ExecuteAsync(IList<IFileEntry> files)
@@ -50,7 +81,7 @@ namespace SmartFileMan.Plugins.Basic
 
                 // 处理无扩展名的情况
                 // Handle cases with no extension
-                if (string.IsNullOrEmpty(ext)) ext = "其他";
+                if (string.IsNullOrEmpty(ext)) ext = "其他 Others";
 
                 // 确定目标文件夹路径
                 // Determine destination folder path
@@ -73,7 +104,7 @@ namespace SmartFileMan.Plugins.Basic
 
             // 输出调试日志
             // Output debug log
-            System.Diagnostics.Debug.WriteLine($"[插件日志] 本次整理: {currentBatchCount}, 历史总计: {totalCount}");
+            System.Diagnostics.Debug.WriteLine($"[插件日志] 本次整理: {currentBatchCount}, 历史总计: {totalCount} [Plugin Log] This batch processed: {currentBatchCount}, Total so far: {totalCount}");
         }
 
         /// <summary>

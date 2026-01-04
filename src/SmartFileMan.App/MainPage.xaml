@@ -1,35 +1,25 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:SmartFileMan.App"
              x:Class="SmartFileMan.App.MainPage"
              Title="SmartFileMan">
 
-    <Grid RowDefinitions="Auto, *" Padding="20" RowSpacing="20">
-        <VerticalStackLayout Grid.Row="0" Spacing="10">
-            <Label Text="欢迎使用文件整理助手"
-                   FontSize="24"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center" />
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
+        <HorizontalStackLayout Grid.Row="0" Spacing="10">
+            <Label x:Name="LblCurrentPlugin" Text="test" VerticalOptions="Center" FontAttributes="Bold"/>
+        </HorizontalStackLayout>
 
-            <Label Text="点击下方按钮扫描桌面文件，并运行已安装的插件。"
-                   FontSize="14"
-                   TextColor="Gray"
-                   HorizontalOptions="Center" />
-
-            <Button Text="开始整理 (扫描桌面)"
-                    Clicked="OnStartClicked"
-                    HorizontalOptions="Center"
-                    HeightRequest="50"
-                    WidthRequest="200"/>
+        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+            <Image Source="dotnet_bot.png" HeightRequest="150" HorizontalOptions="Center" />
+            <Label Text="1" FontSize="24" HorizontalOptions="Center" />
+            <Label Text="1" FontSize="16" TextColor="Gray" HorizontalOptions="Center" />
+            
+            <Button x:Name="BtnStart" Text="开始整理桌面 (Start Organizing Desktop)" Clicked="OnStartClicked" />
+            <Button x:Name="BtnUndo" Text="撤销上一步 (Undo)" Clicked="OnUndoClicked" BackgroundColor="Gray"/>
         </VerticalStackLayout>
-
-        <Grid Grid.Row="1" x:Name="MainContainer" BackgroundColor="#F5F5F5">
-            <Label Text="等待操作..." 
-                   VerticalOptions="Center" 
-                   HorizontalOptions="Center"
-                   TextColor="LightGray"/>
-        </Grid>
+        
+        <Label Grid.Row="2" Text="Ready" FontSize="12" TextColor="Gray"/>
     </Grid>
 
 </ContentPage>

@@ -9,11 +9,14 @@ namespace SmartFileMan.Core.Services
 {
     public class DllPluginLoader
     {
+        private readonly PluginVerifier _verifier = new PluginVerifier();
+
         /// <summary>
         /// 从指定文件夹加载所有插件
         /// </summary>
         /// <param name="folderPath">插件文件夹路径</param>
-        public IEnumerable<IPlugin> LoadPluginsFromFolder(string folderPath)
+        /// <param name="bypassSignatureCheck">是否跳过签名检查 (开发者模式)</param>
+        public IEnumerable<IPlugin> LoadPluginsFromFolder(string folderPath, bool bypassSignatureCheck = false)
         {
             // 确保文件夹存在
             if (!Directory.Exists(folderPath))
@@ -28,15 +31,20 @@ namespace SmartFileMan.Core.Services
 
             foreach (var dllPath in dllFiles)
             {
-                // 跳过并非插件的系统文件 (比如依赖库)
-                if (Path.GetFileName(dllPath).StartsWith("System.") ||
-                    Path.GetFileName(dllPath).StartsWith("Microsoft."))
-                    continue;
-
                 IPlugin? plugin = null;
-
                 try
                 {
+                    // 跳过并非插件的系统文件 (比如依赖库)
+                    if (Path.GetFileName(dllPath).StartsWith("System.") ||
+                        Path.GetFileName(dllPath).StartsWith("Microsoft."))
+                        continue;
+
+                    // 安全校验：验证签名
+                    if (!bypassSignatureCheck && !_verifier.VerifyPlugin(dllPath))
+                    {
+                        continue;
+                    }
+
                     plugin = LoadPlugin(dllPath);
                 }
                 catch (Exception ex)

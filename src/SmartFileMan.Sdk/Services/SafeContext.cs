@@ -93,5 +93,14 @@ namespace SmartFileMan.Sdk.Services
             // 这里设为 false，依靠 Undo 来保证安全
             return await ExecuteCommandAsync(command, requireConfirm: false);
         }
+
+        // 新增：安全删除
+        public async Task<OperationResult> DeleteAsync(IFileEntry file)
+        {
+            var command = new DeleteCommand(file);
+            // 删除是危险操作，默认建议开启二次确认 (requireConfirm: true)
+            // 但为了流畅体验，如果支持完美撤销，也可以设为 false。这里我们保守一点设为 true。
+            return await ExecuteCommandAsync(command, requireConfirm: true);
+        }
     }
 }
