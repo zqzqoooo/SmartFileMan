@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RootNamespace>SmartFileMan.Plugins.AiClassifier</RootNamespace>
+    <AssemblyName>SmartFileMan.Plugins.AiClassifier</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartFileMan.Contracts\SmartFileMan.Contracts.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SmartFileMan.Sdk\SmartFileMan.Sdk.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.11" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="dotnet run --project &quot;$(SolutionDir)src\SmartFileMan.Signer\SmartFileMan.Signer.csproj&quot; -- sign &quot;$(TargetPath)&quot; &quot;$(SolutionDir)Keys\private.key&quot;" />
+    <ItemGroup>
+      <PluginFiles Include="$(TargetDir)*.dll;$(TargetDir)*.json;$(TargetDir)*.pdb;$(TargetDir)*.sig" Exclude="$(TargetDir)Microsoft.*;$(TargetDir)System.*;$(TargetDir)SmartFileMan.Contracts.*;$(TargetDir)SmartFileMan.Sdk.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\" Condition="'$(Configuration)' == 'Debug'" />
+  </Target>
+
+</Project>

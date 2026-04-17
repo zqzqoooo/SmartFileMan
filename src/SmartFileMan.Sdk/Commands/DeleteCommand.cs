@@ -12,7 +12,7 @@ namespace SmartFileMan.Sdk.Commands
         private readonly string _originalPath;
         private string _recyclePath; // ÁÙÊ±´æ·ÅÂ·¾¶
 
-        public string Name => $"É¾³ý {_file.Name}";
+        public string Name => $"delete {_file.Name}";
 
         public DeleteCommand(IFileEntry file)
         {

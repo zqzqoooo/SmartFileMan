@@ -1,6 +1,8 @@
-using SmartFileMan.Contracts;
+using SmartFileMan.Contracts.Core;
 using SmartFileMan.Contracts.Models;
 using SmartFileMan.Contracts.Services;
+using SmartFileMan.Contracts.Storage;
+using SmartFileMan.Contracts.UI;
 using SmartFileMan.Sdk.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -12,7 +14,7 @@ namespace SmartFileMan.Sdk
     /// 插件的基类：提供安全上下文 (SafeContext) 和存储 (Storage) 的自动管理
     /// Base class for plugins: Provides automatic management of SafeContext and Storage
     /// </summary>
-    public abstract class PluginBase : IOrganizerPlugin, IFilePlugin
+    public abstract class PluginBase : IFilePlugin
     {
         // --- 插件基础信息 / Basic Plugin Information ---
 
@@ -43,6 +45,14 @@ namespace SmartFileMan.Sdk
         /// Default plugin type is General
         /// </summary>
         public virtual PluginType Type => PluginType.General;
+
+        /// <summary>
+        /// Phase Zero: Analyze batch. Default does nothing.
+        /// </summary>
+        public virtual Task AnalyzeBatchAsync(BatchContext context)
+        {
+            return Task.CompletedTask;
+        }
 
         /// <summary>
         /// 阶段一：默认不做任何事
@@ -77,16 +87,41 @@ namespace SmartFileMan.Sdk
         protected IPluginStorage? Storage { get; private set; }
 
         /// <summary>
+        /// 插件管理器 (系统服务)
+        /// Plugin Manager (System Service)
+        /// </summary>
+        protected IPluginManager? PluginManager { get; private set; }
+
+        private Func<IFileManager?>? _fileManagerFactory;
+
+        /// <summary>
+        /// 文件管理器 (系统服务) - 懒加载
+        /// File Manager (System Service) - Lazy Loaded
+        /// </summary>
+        protected IFileManager? FileManager => _fileManagerFactory?.Invoke();
+
+        /// <summary>
         /// 初始化方法：由主程序在加载插件时调用，注入核心能力
         /// Initialization method: Called by the main application during loading to inject capabilities
         /// </summary>
         /// <param name="context">安全上下文 / Safe Context</param>
         /// <param name="storage">专属存储 / Specific Storage</param>
-        public void Initialize(SafeContext context, IPluginStorage storage)
+        /// <param name="pluginManager">插件管理器 / Plugin Manager</param>
+        /// <param name="fileManagerFactory">文件管理器工厂 / File Manager Factory</param>
+        public void Initialize(SafeContext context, IPluginStorage storage, IPluginManager? pluginManager = null, Func<IFileManager?>? fileManagerFactory = null)
         {
             Context = context;
             Storage = storage;
+            PluginManager = pluginManager;
+            _fileManagerFactory = fileManagerFactory;
+            OnInitialized();
         }
+
+        /// <summary>
+        /// 当插件初始化完成时调用 (钩子)
+        /// Called when plugin initialization is complete (Hook)
+        /// </summary>
+        protected virtual void OnInitialized() { }
 
         // --- 快捷 Helper 方法 / Shortcut Helper Methods ---
 
@@ -121,10 +156,21 @@ namespace SmartFileMan.Sdk
         }
 
         /// <summary>
-        /// 核心执行逻辑：留给具体的插件子类实现
-        /// Core execution logic: To be implemented by specific plugin subclasses
+        /// 安全修改文件内容
+        /// Safely modify file content with automatic backup and undo support
         /// </summary>
-        /// <param name="files">待处理的文件列表 / List of files to be processed</param>
-        public abstract Task ExecuteAsync(IList<IFileEntry> files);
+        /// <param name="file">The file to modify</param>
+        /// <param name="modifyAction">Function that takes the file path and performs IO. Return true if successful.</param>
+        protected async Task ModifyContent(IFileEntry file, Func<string, Task<bool>> modifyAction)
+        {
+             if (Context == null) throw new InvalidOperationException("Plugin not initialized");
+             await Context.ModifyContentAsync(file, modifyAction);
+        }
+
+        /// <summary>
+        /// 旧版执行接口实现 (保留兼容性)
+        /// Legacy execution interface implementation (Retains compatibility)
+        /// </summary>
+        public virtual Task ExecuteAsync(IList<IFileEntry> files) => Task.CompletedTask;
     }
 }

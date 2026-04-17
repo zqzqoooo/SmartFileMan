@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SmartFileMan.Plugins.MovieCollection.ViewModels"
+             x:Class="SmartFileMan.Plugins.MovieCollection.Views.SearchResultPage">
+
+    <ContentView.Resources>
+        <Style x:Key="CardStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#16213E"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+    </ContentView.Resources>
+
+    <Grid BackgroundColor="#1A1A2E">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 搜索栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16">
+            <Frame BackgroundColor="#16213E" 
+                    CornerRadius="8" 
+                    Padding="12,8"
+                    Grid.Column="0">
+                <Entry x:Name="SearchEntry"
+                       Placeholder="搜索影视作品..."
+                       TextColor="White"
+                       PlaceholderColor="#B0B0B0"/>
+            </Frame>
+            <Button Grid.Column="1"
+                    Text="搜索"
+                    BackgroundColor="#E94560"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Margin="8,0,0,0"
+                    Padding="16,8"
+                    Clicked="OnSearchClicked"/>
+        </Grid>
+
+        <!-- 搜索结果 -->
+        <ScrollView Grid.Row="1" Margin="16,0,16,16">
+            <!-- 加载状态 -->
+            <Frame IsVisible="{Binding IsLoading}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   BackgroundColor="#16213E"
+                   CornerRadius="12"
+                   Padding="24">
+                <StackLayout>
+                    <ActivityIndicator Color="#E94560" IsRunning="True"/>
+                    <Label Text="搜索中..." 
+                           TextColor="#B0B0B0" 
+                           Margin="0,8,0,0"
+                           HorizontalOptions="Center"/>
+                </StackLayout>
+            </Frame>
+
+            <!-- 空状态 -->
+            <StackLayout IsVisible="{Binding HasSearched}"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center"
+                         Margin="0,48,0,0">
+                <Label Text="🔍"
+                       FontSize="48"
+                       HorizontalOptions="Center"/>
+                <Label Text="未找到匹配的影视作品"
+                       TextColor="#B0B0B0"
+                       FontSize="16"
+                       HorizontalOptions="Center"
+                       Margin="0,8,0,0"/>
+                <Label Text="尝试不同的关键词"
+                       TextColor="#666666"
+                       FontSize="14"
+                       HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <!-- 结果列表 -->
+            <ScrollView IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                <StackLayout>
+                    <Label Text="搜索结果列表" 
+                           TextColor="#B0B0B0"/>
+                </StackLayout>
+            </ScrollView>
+        </ScrollView>
+
+        <!-- 错误消息 -->
+        <Frame Grid.Row="1"
+               IsVisible="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"
+               BackgroundColor="#F44336"
+               CornerRadius="8"
+               Padding="16"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Margin="16">
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="White"
+                   FontSize="14"/>
+        </Frame>
+    </Grid>
+</ContentView>

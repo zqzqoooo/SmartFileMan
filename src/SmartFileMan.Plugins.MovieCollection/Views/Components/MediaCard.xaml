@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.Plugins.MovieCollection.Views.Components.MediaCard">
+
+    <ContentView.Resources>
+        <Style x:Key="CardStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#16213E"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+    </ContentView.Resources>
+
+    <Frame Style="{StaticResource CardStyle}">
+        <Grid RowDefinitions="Auto,Auto,Auto" WidthRequest="150">
+            <!-- 海报 -->
+            <Frame CornerRadius="4" 
+                   BackgroundColor="#0F3460" 
+                   Padding="0"
+                   HeightRequest="200">
+                <Image Source="{Binding PosterSource}"
+                       Aspect="AspectFill"/>
+            </Frame>
+
+            <!-- 标题 -->
+            <Label Grid.Row="1"
+                   Text="{Binding Title}"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   MaxLines="2"
+                   Margin="0,8,0,4"/>
+
+            <!-- 媒体类型和评分 -->
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                <Label Text="{Binding MediaTypeLabel}"
+                       FontSize="11"
+                       TextColor="#533483"/>
+
+                <HorizontalStackLayout Grid.Column="1">
+                    <Label Text="⭐ " FontSize="11" TextColor="#E94560"/>
+                    <Label Text="{Binding Rating, StringFormat='{}{0:F1}'}"
+                           FontSize="11"
+                           TextColor="White"/>
+                </HorizontalStackLayout>
+            </Grid>
+        </Grid>
+    </Frame>
+</ContentView>

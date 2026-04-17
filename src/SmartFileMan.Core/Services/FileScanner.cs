@@ -12,12 +12,14 @@ namespace SmartFileMan.Core.Services
     {
         /// <summary>
         /// 异步扫描指定文件夹下的所有文件
+        /// Asynchronously scan all files in the specified folder
         /// </summary>
-        /// <param name="folderPath">文件夹路径</param>
-        /// <param name="recursive">是否递归子文件夹 (默认否，为了演示简单)</param>
+        /// <param name="folderPath">文件夹路径 / Folder path</param>
+        /// <param name="recursive">是否递归子文件夹 (默认否，为了演示简单) / Whether to recurse into subfolders (Default false, for simplicity)</param>
         public async Task<IList<IFileEntry>> ScanAsync(string folderPath, bool recursive = false)
         {
             // 简单校验
+            // Simple Validation
             if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
             {
                 return new List<IFileEntry>();
@@ -31,11 +33,13 @@ namespace SmartFileMan.Core.Services
                 try
                 {
                     // 获取所有文件
+                    // Get all files
                     var fileInfos = dirInfo.GetFiles("*.*", searchOption);
 
                     // 转换为我们的 IFileEntry (LocalFileEntry)
+                    // Convert to our IFileEntry (LocalFileEntry)
                     var entries = fileInfos.Select(f => new LocalFileEntry(f.FullName))
-                                           .Cast<IFileEntry>() // 强转为接口类型
+                                           .Cast<IFileEntry>() // 强转为接口类型 / Cast to interface type
                                            .ToList();
 
                     return entries;
@@ -43,6 +47,7 @@ namespace SmartFileMan.Core.Services
                 catch (UnauthorizedAccessException)
                 {
                     // 遇到没权限的文件夹跳过
+                    // Skip folders without permission
                     return new List<IFileEntry>();
                 }
                 catch (Exception ex)

@@ -1,0 +1,55 @@
+﻿<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SmartFileMan.Plugins.MovieCollection.ViewModels"
+             x:Class="SmartFileMan.Plugins.MovieCollection.Views.LibraryPage"
+             BackgroundColor="#1A1A2E">
+
+    <ContentView.Resources>
+        <Style x:Key="PosterImageStyle" TargetType="Image">
+            <Setter Property="Aspect" Value="AspectFill" />
+        </Style>
+    </ContentView.Resources>
+
+    <Grid>
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" 
+                             IsVisible="{Binding IsApiKeyMissing}" Spacing="20">
+            <Label Text="🔑" FontSize="64" HorizontalOptions="Center"/>
+            <Label Text="尚未配置 TMDB API Key" FontSize="20" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+            <Label Text="请点击右上角设置配置您的 API Key" TextColor="#B0B0B0" HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" 
+                             IsVisible="{Binding HasNoVideos}" Spacing="20">
+            <Label Text="🎬" FontSize="64" HorizontalOptions="Center"/>
+            <Label Text="暂无视频 / No Videos" FontSize="20" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+            <Label Text="导入包含影视的文件夹后会在此显示海报墙" TextColor="#B0B0B0" HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+
+        <ScrollView IsVisible="{Binding DisplayPosterWall}">
+            <CollectionView ItemsSource="{Binding LibraryItems}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="3" VerticalItemSpacing="10" HorizontalItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LibraryItemViewModel">
+                        <Frame BackgroundColor="#16213E" CornerRadius="8" Padding="0" Margin="4">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LibraryViewModel}}, Path=ItemSelectedCommand}" CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                <Frame CornerRadius="4" BackgroundColor="#0F3460" Padding="0" HeightRequest="200" Grid.Row="0">
+                                    <Image Source="{Binding PosterSource}" Style="{StaticResource PosterImageStyle}"/>
+                                </Frame>
+                                <Label Grid.Row="1" Text="{Binding Title}" FontSize="14" FontAttributes="Bold" TextColor="White" MaxLines="2" Margin="8,8,8,4" LineBreakMode="TailTruncation" />
+                                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="8,0,8,8">
+                                    <Label Text="{Binding MediaTypeLabel}" FontSize="11" TextColor="#533483"/>
+                                    <Label Grid.Column="1" Text="{Binding EpisodeCount, StringFormat='共 {0} 个文件'}" FontSize="11" TextColor="#B0B0B0" HorizontalOptions="End"/>
+                                </Grid>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
+</ContentView>

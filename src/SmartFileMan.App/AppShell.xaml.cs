@@ -1,5 +1,6 @@
 ﻿using SmartFileMan.App.Helpers;
-using SmartFileMan.Contracts;
+using SmartFileMan.Contracts.Core;
+using SmartFileMan.Contracts.UI;
 using SmartFileMan.Core.Services;
 using Microsoft.Maui.Controls;
 
@@ -19,9 +20,11 @@ namespace SmartFileMan.App
         {
             InitializeComponent();
             _pluginManager = pluginManager;
+            
+            // Subscribe to hot-reload
+            _pluginManager.PluginsChanged += (s, e) => MainThread.BeginInvokeOnMainThread(LoadPluginMenu);
 
-            // 将 MainPage 的解析交给 DI
-            // Load the sidebar plugin menu
+            // Initial load
             LoadPluginMenu();
         }
 
@@ -31,73 +34,90 @@ namespace SmartFileMan.App
         /// </summary>
         private void LoadPluginMenu()
         {
+            // Capture current navigation state
+            var currentTitle = Current?.CurrentItem?.Title;
+
+            // Clear existing plugin items (Naive approach: Clear all and re-add fixed items + plugins)
+            // Ideally we should track which items are plugins.
+            this.Items.Clear();
+
+            // Re-add Start Page (if needed) or hardcoded items in XAML?
+            // Since this.Items.Clear() removes XAML items too if they are added to Items collection.
+            // Assuming AppShell.xaml is mostly empty or we re-construct.
+            
+            // Add Default/Home Item
+            var startItem = new FlyoutItem { Title = "Home", Icon = "home_icon.png" }; // Icon optional
+            var startTab = new Tab { Title = "Home" };
+            startTab.Items.Add(new ShellContent { Title = "Home", ContentTemplate = new DataTemplate(typeof(MainPage)) });
+            startItem.Items.Add(startTab);
+            this.Items.Add(startItem);
+
             foreach (var plugin in _pluginManager.Plugins)
             {
-                // 创建飞出菜单项和选项卡
-                // Create FlyoutItem and Tab
-                var item = new FlyoutItem { Title = plugin.DisplayName };
-                var tab = new Tab { Title = plugin.DisplayName };
-
-                // 创建一个空页面作为 UI 占位符
-                // Create an empty page as a UI placeholder
-                var content = new ContentPage { Title = plugin.DisplayName };
-
-                // 当页面显示时，按需加载插件的真实 UI
-                // Load the actual plugin UI on-demand when the page appears
-                content.Appearing += (s, e) =>
+                if (plugin is IPluginUI uiPlugin && plugin.IsEnabled)
                 {
-                    // 检查该插件是否实现了 UI 接口
-                    // Check if the plugin implements the UI interface
-                    if (plugin is IPluginUI uiPlugin)
-                    {
-                        // 调用插件方法获取其自定义视图
-                        // Call the plugin method to retrieve its custom view
-                        var pluginView = uiPlugin.GetView();
+                    // Create FlyoutItem and Tab
+                    var item = new FlyoutItem { Title = plugin.DisplayName };
+                    var tab = new Tab { Title = plugin.DisplayName };
 
-                        // 将视图设置为当前页面的内容
-                        // Set the view as the content of the current page
-                        content.Content = pluginView;
-                    }
-                    else
+                    // Create an empty page as a UI placeholder
+                    var content = new ContentPage { Title = plugin.DisplayName };
+
+                    // Load the actual plugin UI on-demand when the page appears
+                    content.Appearing += (s, e) =>
                     {
-                        // 对于没有界面的插件，显示默认提示信息
-                        // For plugins without a UI, display a default prompt message
-                        content.Content = new Label
+                        // Check if the plugin implements the UI interface
+                        if (plugin is IPluginUI uiPlugin)
                         {
-                            Text = "此插件在后台运行，无配置界面。(This plugin runs in the background and has no configuration interface.)",
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center
-                        };
-                    }
-                };
+                            // Call the plugin method to retrieve its custom view
+                            var pluginView = uiPlugin.GetView();
 
-                // 将页面组装到导航结构中
-                // Assemble the page into the navigation structure
-                tab.Items.Add(content);
-                item.Items.Add(tab);
-                this.Items.Add(item);
+                            // Set the view as the content of the current page
+                            content.Content = pluginView;
+                        }
+                        else
+                        {
+                            // For plugins without a UI, display a default prompt message
+                            content.Content = new Label
+                            {
+                                Text = "This plugin runs in the background and has no configuration interface.",
+                                HorizontalOptions = LayoutOptions.Center,
+                                VerticalOptions = LayoutOptions.Center
+                            };
+                        }
+                    };
+
+                    // Assemble the page into the navigation structure
+                    tab.Items.Add(content);
+                    item.Items.Add(tab);
+                    this.Items.Add(item);
+                }
             }
 
-            // 将 MainPage 的解析交给 DI
-            Routing.RegisterRoute("MainPage", typeof(MainPage));
-            // 注册新页面路由
-            Routing.RegisterRoute(nameof(PluginManagementPage), typeof(PluginManagementPage));
             Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
-        }
-
-        private async void OnPluginManagerClicked(object sender, EventArgs e)
-        {
-            await Current.GoToAsync(nameof(PluginManagementPage));
+            
+            // Restore navigation
+            if (currentTitle != null)
+            {
+                var match = this.Items.FirstOrDefault(i => i.Title == currentTitle);
+                if (match != null) 
+                {
+                    // If we are on main thread, set it
+                    try { CurrentItem = match; } catch { }
+                }
+            }
         }
 
         private async void OnSettingsClicked(object sender, EventArgs e)
         {
+            // Close flyout and navigate
+            Current.FlyoutIsPresented = false;
             await Current.GoToAsync(nameof(SettingsPage));
         }
 
         private void OnExitClicked(object sender, EventArgs e)
         {
-            Application.Current?.Quit();
+            Application.Current.Quit();
         }
     }
 }

@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartFileMan.Contracts\SmartFileMan.Contracts.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SmartFileMan.Sdk\SmartFileMan.Sdk.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.11" ExcludeAssets="runtime" />
+    <PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+    <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="4.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <!-- Sign the plugin -->
+    <Exec Command="dotnet run --project &quot;$(SolutionDir)src\SmartFileMan.Signer\SmartFileMan.Signer.csproj&quot; -- sign &quot;$(TargetPath)&quot; &quot;$(SolutionDir)Keys\private.key&quot;" />
+    <!-- Sign TagLibSharp dependency -->
+    <Exec Command="dotnet run --project &quot;$(SolutionDir)src\SmartFileMan.Signer\SmartFileMan.Signer.csproj&quot; -- sign &quot;$(TargetDir)TagLibSharp.dll&quot; &quot;$(SolutionDir)Keys\private.key&quot;" Condition="Exists('$(TargetDir)TagLibSharp.dll')" />
+    
+    <!-- Cleanup: Remove framework libraries from Plugins folder that might have been copied previously -->
+    <ItemGroup>
+        <JunkFiles Include="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\Microsoft.*" />
+        <JunkFiles Include="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\System.*" />
+        <JunkFiles Include="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\SmartFileMan.Contracts.*" />
+        <JunkFiles Include="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\SmartFileMan.Sdk.*" />
+    </ItemGroup>
+    <Delete Files="@(JunkFiles)" Condition="'$(Configuration)' == 'Debug'" />
+
+    <!-- Auto-deploy to AppX Plugins folder for Debugging -->
+    <ItemGroup>
+        <!-- Include .sig files -->
+        <PluginFiles Include="$(TargetDir)*.dll;$(TargetDir)*.json;$(TargetDir)*.pdb;$(TargetDir)*.sig" Exclude="$(TargetDir)Microsoft.*;$(TargetDir)System.*;$(TargetDir)SmartFileMan.Contracts.*;$(TargetDir)SmartFileMan.Sdk.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\" Condition="'$(Configuration)' == 'Debug'" />
+  </Target>
+
+</Project>

@@ -41,10 +41,10 @@ namespace SmartFileMan.Contracts.Models
         // 打开文件流 (用于读取内容，如 AI 分析、读取视频头信息)
         Task<Stream> OpenReadAsync();
 
-        // 1. 保留这个泛型接口，以后官方媒体插件可以用
+        // 保留这个泛型接口，以后官方媒体插件可以用
         Task<T?> GetMetadataAsync<T>() where T : class;
 
-        // 2. 【新增】万能口袋：自定义属性字典
+        // 万能口袋：自定义属性字典
         // 插件可以往这里写数据，UI 可以读这里的数据
         IDictionary<string, object> Properties { get; }
     }

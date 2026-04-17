@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:SmartFileMan.Plugins.Music"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="SmartFileMan.Plugins.Music.MusicLibraryView">
+
+    <ContentView.Resources>
+        <local:PathToAlbumArtConverter x:Key="PathToArtConverter" />
+
+        <!-- Color Resources -->
+        <Color x:Key="PrimaryColor">#6366F1</Color>
+        <Color x:Key="PrimaryDarkColor">#4F46E5</Color>
+        <Color x:Key="AccentColor">#F472B6</Color>
+        <Color x:Key="BackgroundColor">#F8FAFC</Color>
+        <Color x:Key="CardColor">#FFFFFF</Color>
+        <Color x:Key="TextPrimaryColor">#1E293B</Color>
+        <Color x:Key="TextSecondaryColor">#64748B</Color>
+        <Color x:Key="DividerColor">#E2E8F0</Color>
+
+        <!-- Shadow -->
+        <Shadow x:Key="CardShadow">
+            <Shadow.Color>#0000001A</Shadow.Color>
+            <Shadow.Offset>0,2</Shadow.Offset>
+            <Shadow.Radius>8</Shadow.Radius>
+            <Shadow.Opacity>0.1</Shadow.Opacity>
+        </Shadow>
+
+        <!-- ControlTemplate for Search Entry -->
+        <ControlTemplate x:Key="SearchEntryTemplate">
+            <Grid ColumnDefinitions="*,Auto" HeightRequest="40">
+                <Entry Grid.Column="0"
+                       Placeholder="Search music..."
+                       PlaceholderColor="#94A3B8"
+                       TextColor="{StaticResource TextPrimaryColor}"
+                       BackgroundColor="#F1F5F9"
+                       Margin="0"
+                       Text="{TemplateBinding Text, Mode=TwoWay}"
+                       TextChanged="{TemplateBinding TextChanged}" />
+                <Border Grid.Column="1"
+                        WidthRequest="40"
+                        StrokeShape="RoundRectangle 0,20,20,0"
+                        BackgroundColor="#6366F1">
+                    <Label Text="🔍" HorizontalOptions="Center" VerticalOptions="Center"
+                           FontSize="16" />
+                </Border>
+            </Grid>
+        </ControlTemplate>
+    </ContentView.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+          BackgroundColor="{StaticResource BackgroundColor}">
+
+        <!-- Header with Gradient -->
+        <Border Grid.Row="0"
+                BackgroundColor="{StaticResource PrimaryColor}"
+                StrokeThickness="0"
+                Padding="0">
+            <Border.Shadow>
+                <Shadow Color="#00000020" Offset="0,4" Radius="12" Opacity="0.15"/>
+            </Border.Shadow>
+            <Grid ColumnDefinitions="Auto,*,Auto" Padding="20,18,20,18">
+                <!-- Icon -->
+                <Border Grid.Column="0"
+                        WidthRequest="48" HeightRequest="48"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#FFFFFF20">
+                    <Label Text="🎵" FontSize="24"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Title -->
+                <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0" VerticalOptions="Center">
+                    <Label Text="Music Library"
+                           TextColor="White"
+                           FontSize="22"
+                           FontAttributes="Bold" />
+                    <Label Text="Your personal music collection"
+                           TextColor="#E0E7FF"
+                           FontSize="13" />
+                </VerticalStackLayout>
+
+                <!-- Header Actions -->
+                <HorizontalStackLayout Grid.Column="2" Spacing="12" VerticalOptions="Center">
+                    <Button Text="🔍"
+                            WidthRequest="44" HeightRequest="44"
+                            Padding="0" CornerRadius="22"
+                            BackgroundColor="#FFFFFF20"
+                            TextColor="White"
+                            Clicked="OnSearchClicked" />
+                    <Button Text="⚙️"
+                            WidthRequest="44" HeightRequest="44"
+                            Padding="0" CornerRadius="22"
+                            BackgroundColor="#FFFFFF20"
+                            TextColor="White"
+                            Clicked="OnSettingsClicked" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Statistics Cards -->
+        <Grid Grid.Row="1" Padding="16,12,16,12">
+            <Grid ColumnDefinitions="*,*,*">
+                <!-- Tracks Card -->
+                <Border Grid.Column="0" StrokeShape="RoundRectangle 16"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource CardColor}"
+                        Margin="0,0,6,0"
+                        Padding="16,12">
+                    <Border.Shadow>
+                        <Shadow Color="#00000010" Offset="0,2" Radius="6" Opacity="0.08"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Tracks" FontSize="12" TextColor="{StaticResource TextSecondaryColor}" />
+                        <Label x:Name="StatsTracks" Text="0"
+                               FontSize="24" FontAttributes="Bold"
+                               TextColor="{StaticResource PrimaryColor}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Artists Card -->
+                <Border Grid.Column="1" StrokeShape="RoundRectangle 16"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource CardColor}"
+                        Margin="3,0"
+                        Padding="16,12">
+                    <Border.Shadow>
+                        <Shadow Color="#00000010" Offset="0,2" Radius="6" Opacity="0.08"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Artists" FontSize="12" TextColor="{StaticResource TextSecondaryColor}" />
+                        <Label x:Name="StatsArtists" Text="0"
+                               FontSize="24" FontAttributes="Bold"
+                               TextColor="{StaticResource AccentColor}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Albums Card -->
+                <Border Grid.Column="2" StrokeShape="RoundRectangle 16"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource CardColor}"
+                        Margin="6,0,0,0"
+                        Padding="16,12">
+                    <Border.Shadow>
+                        <Shadow Color="#00000010" Offset="0,2" Radius="6" Opacity="0.08"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Albums" FontSize="12" TextColor="{StaticResource TextSecondaryColor}" />
+                        <Label x:Name="StatsAlbums" Text="0"
+                               FontSize="24" FontAttributes="Bold"
+                               TextColor="#10B981" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Search Section -->
+        <Grid Grid.Row="2" Padding="16,8,16,8"
+              x:Name="SearchSection"
+              IsVisible="False">
+            <Entry x:Name="SearchEntry"
+                   Placeholder="Search by title, artist, or album..."
+                   PlaceholderColor="#94A3B8"
+                   TextColor="{StaticResource TextPrimaryColor}"
+                   BackgroundColor="White"
+                   HeightRequest="44"
+                   TextChanged="OnSearchTextChanged">
+                <Entry.Shadow>
+                    <Shadow Color="#00000010" Offset="0,2" Radius="6" Opacity="0.08"/>
+                </Entry.Shadow>
+            </Entry>
+        </Grid>
+
+        <!-- Settings Section -->
+        <ScrollView Grid.Row="3"
+                  x:Name="SettingsSection"
+                  IsVisible="False"
+                  BackgroundColor="White">
+            <VerticalStackLayout Padding="20" Spacing="20">
+                <!-- Settings Header -->
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" WidthRequest="40" HeightRequest="40"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{StaticResource PrimaryColor}20">
+                        <Label Text="⚙️" FontSize="20"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Grid.Column="1" Text="Settings"
+                           FontSize="20" FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimaryColor}"
+                           VerticalOptions="Center" Margin="12,0,0,0"/>
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{StaticResource DividerColor}" />
+
+                <!-- Music Folder -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="📁 Music Folder Path"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimaryColor}" />
+                    <Label Text="Leave empty to use default ./music/ folder"
+                           FontSize="12"
+                           TextColor="{StaticResource TextSecondaryColor}" />
+                    <Entry x:Name="MusicFolderEntry"
+                           Placeholder="Default: ./music/"
+                           Text=""
+                           HeightRequest="44"
+                           BackgroundColor="#F8FAFC" />
+                </VerticalStackLayout>
+
+                <!-- Folder Structure -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="📂 Folder Structure"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimaryColor}" />
+                    <Picker x:Name="FolderStructurePicker"
+                            Title="Select structure"
+                            HeightRequest="44"
+                            BackgroundColor="#F8FAFC">
+                        <Picker.Items>
+                            <x:String>ArtistAlbum (Standard)</x:String>
+                            <x:String>Flat (Artist - Album)</x:String>
+                            <x:String>Compact (Artist only)</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </VerticalStackLayout>
+
+                <!-- Extract Album Art -->
+                <Border StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1"
+                        StrokeColor="{StaticResource DividerColor}"
+                        BackgroundColor="#F8FAFC"
+                        Padding="16">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Border Grid.Column="0" WidthRequest="44" HeightRequest="44"
+                                StrokeShape="RoundRectangle 12"
+                                BackgroundColor="{StaticResource AccentColor}20">
+                            <Label Text="🖼️" FontSize="22"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                            <Label Text="Extract Album Art" FontSize="15"
+                                   TextColor="{StaticResource TextPrimaryColor}"
+                                   FontAttributes="Bold"/>
+                            <Label Text="Cache album covers for faster display"
+                                   FontSize="12"
+                                   TextColor="{StaticResource TextSecondaryColor}" />
+                        </VerticalStackLayout>
+                        <Switch x:Name="ExtractArtSwitch"
+                                Grid.Column="2"
+                                IsToggled="True"
+                                VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Default Names -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="8">
+                        <Label Text="Default Artist"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimaryColor}" />
+                        <Entry x:Name="DefaultArtistEntry"
+                               Text="Unknown Artist"
+                               HeightRequest="44"
+                               BackgroundColor="#F8FAFC" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" Spacing="8">
+                        <Label Text="Default Album"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimaryColor}" />
+                        <Entry x:Name="DefaultAlbumEntry"
+                               Text="Unknown Album"
+                               HeightRequest="44"
+                               BackgroundColor="#F8FAFC" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Action Buttons -->
+                <HorizontalStackLayout Spacing="12" Margin="0,8,0,0">
+                    <Button Text="Save Settings"
+                            Clicked="OnSaveSettings"
+                            BackgroundColor="{StaticResource PrimaryColor}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            HorizontalOptions="FillAndExpand"
+                            HeightRequest="48"
+                            CornerRadius="12" />
+                    <Button Text="Reset"
+                            Clicked="OnResetSettings"
+                            BackgroundColor="White"
+                            TextColor="{StaticResource TextSecondaryColor}"
+                            FontAttributes="Bold"
+                            BorderWidth="1"
+                            BorderColor="{StaticResource DividerColor}"
+                            HorizontalOptions="FillAndExpand"
+                            HeightRequest="48"
+                            CornerRadius="12" />
+                </HorizontalStackLayout>
+
+                <!-- Management Section -->
+                <BoxView HeightRequest="1" Color="{StaticResource DividerColor}" Margin="0,8,0,16"/>
+
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Library Management"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimaryColor}" />
+
+                    <Border StrokeShape="RoundRectangle 12"
+                            StrokeThickness="0"
+                            BackgroundColor="#FEF2F2"
+                            Padding="16">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0" WidthRequest="40" HeightRequest="40"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#EF444420">
+                                <Label Text="🗑️" FontSize="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                <Label Text="Clear History" FontSize="14"
+                                       TextColor="#DC2626"
+                                       FontAttributes="Bold"/>
+                                <Label Text="Remove all tracked music records"
+                                       FontSize="11"
+                                       TextColor="#EF4444" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="2"
+                                    Text="Clear"
+                                    Clicked="OnClearHistory"
+                                    BackgroundColor="#EF4444"
+                                    TextColor="White"
+                                    WidthRequest="80"
+                                    HeightRequest="36"
+                                    CornerRadius="8"
+                                    FontSize="12"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 12"
+                            StrokeThickness="0"
+                            BackgroundColor="#ECFDF5"
+                            Padding="16">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0" WidthRequest="40" HeightRequest="40"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#10B98120">
+                                <Label Text="📋" FontSize="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                <Label Text="Export Playlist" FontSize="14"
+                                       TextColor="#059669"
+                                       FontAttributes="Bold"/>
+                                <Label Text="Export as M3U format"
+                                       FontSize="11"
+                                       TextColor="#10B981" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="2"
+                                    Text="Export"
+                                    Clicked="OnExportPlaylist"
+                                    BackgroundColor="#10B981"
+                                    TextColor="White"
+                                    WidthRequest="80"
+                                    HeightRequest="36"
+                                    CornerRadius="8"
+                                    FontSize="12"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Now Playing Player -->
+        <VerticalStackLayout Grid.Row="4"
+                             x:Name="NowPlayingSection"
+                             IsVisible="False"
+                             BackgroundColor="#0F172A"
+                             Margin="0,8,0,0"
+                             Spacing="0">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" Padding="16">
+                <!-- Album Art -->
+                <Border Grid.Column="0"
+                        WidthRequest="64" HeightRequest="64"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1E293B">
+                    <Image x:Name="PlayerArt"
+                           Aspect="AspectFill"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="Fill" />
+                </Border>
+
+                <!-- Track Info -->
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                    <Label x:Name="PlayerTitle"
+                           Text="No Track Playing"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           FontSize="16"
+                           LineBreakMode="TailTruncation"/>
+                    <Label x:Name="PlayerArtist"
+                           Text="--"
+                           TextColor="#94A3B8"
+                           FontSize="13"
+                           LineBreakMode="TailTruncation"/>
+                </VerticalStackLayout>
+
+                <!-- Play/Pause Button -->
+                <Button Grid.Column="2"
+                        x:Name="PlayPauseButton"
+                        Text="▶"
+                        Clicked="OnPlayPauseClicked"
+                        BackgroundColor="#6366F1"
+                        TextColor="White"
+                        WidthRequest="48"
+                        HeightRequest="48"
+                        Padding="0"
+                        CornerRadius="24"
+                        VerticalOptions="Center"/>
+
+                <!-- Stop Button -->
+                <Button Grid.Column="3"
+                        Text="⏹"
+                        Clicked="OnStopClicked"
+                        BackgroundColor="#334155"
+                        TextColor="White"
+                        WidthRequest="48"
+                        HeightRequest="48"
+                        Padding="0"
+                        CornerRadius="24"
+                        VerticalOptions="Center"/>
+            </Grid>
+            <!-- Audio Player MediaElement -->
+            <toolkit:MediaElement x:Name="AudioPlayer"
+                                  HeightRequest="0"
+                                  IsVisible="False"
+                                  MediaEnded="OnMediaEnded" />
+        </VerticalStackLayout>
+
+        <!-- Music List -->
+        <Grid Grid.Row="5" Padding="16,8,16,0">
+            <CollectionView x:Name="MusicList" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                      Spacing="20" Padding="40">
+                        <Border WidthRequest="80" HeightRequest="80"
+                                StrokeShape="RoundRectangle 24"
+                                BackgroundColor="#E0E7FF">
+                            <Label Text="🎵" FontSize="40"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="No music yet"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondaryColor}" />
+                            <Label Text="Drag audio files here to organize your library"
+                                   FontSize="13"
+                                   TextColor="#94A3B8"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:MusicTrack">
+                        <Frame Padding="14"
+                               Margin="0,6"
+                               BorderColor="Transparent"
+                               BackgroundColor="{StaticResource CardColor}"
+                               CornerRadius="16"
+                               HasShadow="False">
+                            <Frame.Shadow>
+                                <Shadow Color="#0000000D" Offset="0,2" Radius="8" Opacity="0.06"/>
+                            </Frame.Shadow>
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                                <!-- Album Art -->
+                                <Border Grid.Column="0"
+                                        WidthRequest="56" HeightRequest="56"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="#F1F5F9">
+                                    <Image Source="{Binding ., Converter={StaticResource PathToArtConverter}}"
+                                           Aspect="AspectFill"
+                                           HorizontalOptions="Fill"
+                                           VerticalOptions="Fill" />
+                                </Border>
+
+                                <!-- Track Info -->
+                                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" VerticalOptions="Center">
+                                    <Label Grid.Row="0"
+                                           Text="{Binding Title}"
+                                           FontAttributes="Bold"
+                                           FontSize="15"
+                                           TextColor="{StaticResource TextPrimaryColor}"
+                                           LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Row="1"
+                                           Text="{Binding Artist}"
+                                           FontSize="13"
+                                           TextColor="{StaticResource TextSecondaryColor}"
+                                           LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Row="2"
+                                           Text="{Binding Album}"
+                                           FontSize="11"
+                                           TextColor="#94A3B8"
+                                           LineBreakMode="TailTruncation"/>
+                                </Grid>
+
+                                <!-- Play Button -->
+                                <Button Grid.Column="2"
+                                        Text="▶"
+                                        Clicked="OnPlayTrack"
+                                        WidthRequest="48"
+                                        HeightRequest="48"
+                                        Padding="0"
+                                        CornerRadius="24"
+                                        BackgroundColor="{StaticResource PrimaryColor}"
+                                        TextColor="White"
+                                        VerticalOptions="Center">
+                                    <Button.Shadow>
+                                        <Shadow Color="#6366F180" Offset="0,2" Radius="6" Opacity="0.3"/>
+                                    </Button.Shadow>
+                                </Button>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </Grid>
+</ContentView>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet-2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- 深色主题色彩规范 -->
+    <!-- Dark Theme Color Palette -->
+
+    <!-- 主背景 -->
+    <Color x:Key="DarkBackground">#1A1A2E</Color>
+    
+    <!-- 卡片背景 -->
+    <Color x:Key="CardBackground">#16213E</Color>
+    
+    <!-- 悬浮元素背景 -->
+    <Color x:Key="ElevatedSurface">#0F3460</Color>
+    
+    <!-- 主强调色 -->
+    <Color x:Key="PrimaryAccent">#E94560</Color>
+    
+    <!-- 次强调色 -->
+    <Color x:Key="SecondaryAccent">#533483</Color>
+    
+    <!-- 主文字 -->
+    <Color x:Key="PrimaryText">#FFFFFF</Color>
+    
+    <!-- 次文字 -->
+    <Color x:Key="SecondaryText">#B0B0B0</Color>
+    
+    <!-- 分割线 -->
+    <Color x:Key="Divider">#2D2D44</Color>
+    
+    <!-- 成功色 -->
+    <Color x:Key="Success">#4CAF50</Color>
+    
+    <!-- 警告色 -->
+    <Color x:Key="Warning">#FF9800</Color>
+    
+    <!-- 错误色 -->
+    <Color x:Key="Error">#F44336</Color>
+
+</ResourceDictionary>

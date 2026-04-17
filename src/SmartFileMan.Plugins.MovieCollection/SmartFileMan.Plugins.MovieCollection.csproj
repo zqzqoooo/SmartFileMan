@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SmartFileMan.Plugins.MovieCollection</RootNamespace>
+    <AssemblyName>SmartFileMan.Plugins.MovieCollection</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>SmartFileMan</Authors>
+    <Description>影视合集管理插件 - 自动重命名、TMDB信息获取</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartFileMan.Contracts\SmartFileMan.Contracts.csproj" />
+    <ProjectReference Include="..\SmartFileMan.Sdk\SmartFileMan.Sdk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Views\DetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\LibraryPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\SearchResultPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\SettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Components\MediaCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Components\EpisodeListItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Components\SearchResultCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Resources\Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Resources\Styles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <!-- Sign plugin for release builds only (requires developer mode off) -->
+    <!-- <Exec Command="dotnet run -project &quot;$(SolutionDir)src\SmartFileMan.Signer\SmartFileMan.Signer.csproj&quot; - sign &quot;$(TargetPath)&quot; &quot;$(SolutionDir)Keys\private.key&quot;" /> -->
+    
+    <!-- Auto-deploy to AppX Plugins folder for Debugging -->
+    <ItemGroup>
+        <MoviePluginFiles Include="$(TargetPath)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MoviePluginFiles)" DestinationFolder="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\" Condition="'$(Configuration)' == 'Debug'" />
+  </Target>
+
+</Project>

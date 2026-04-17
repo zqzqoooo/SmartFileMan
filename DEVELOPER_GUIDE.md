@@ -23,13 +23,19 @@ SmartFileMan 采用分层架构设计：
 *   **Core (核心层)**: 实现了插件加载、竞价仲裁 (`PluginManager`) 和文件调度 (`FileManager`)。
 *   **App (应用层)**: .NET MAUI 用户界面。
 
-### 核心机制：竞价流水线 (Bidding Pipeline)
+### 核心机制：全景竞价流水线 (Batch Bidding Pipeline)
 
-系统采用“**观察-竞价**”模式来决定如何处理文件：
+系统采用“**输入扁平化 -> 全景分析 -> 竞价**”模式：
 
-1.  **观察 (Observe)**: 所有插件都会收到 `OnFileDetectedAsync` 通知，可以读取文件特征。
-2.  **竞价 (Bid)**: 插件通过 `ProposeDestinationAsync` 返回一个“提案” (`RouteProposal`)，包含目标路径和信心分数 (0-100)。
-3.  **仲裁 (Arbitrate)**: 系统选择分数最高的提案执行移动操作。
+1.  **输入扁平化 (Flattening)**: 用户拖入的文件夹会被系统自动拆解，提取其中所有文件，形成一个“扁平化”的批次 (Batch)。
+2.  **全景分析 (Phase 0: Analyze)**: 
+    *   所有插件收到 `AnalyzeBatchAsync(BatchContext)` 调用。
+    *   **Context**: 包含该批次所有文件的列表。
+    *   **作用**: 插件可以在此阶段遍历所有文件，识别文件之间的关联（如：游戏存档与预览图、多部分压缩包），并在内存中建立索引。
+3.  **竞价 (Phase 1: Bid)**: 
+    *   系统逐个询问每个文件 (`ProposeDestinationAsync`)。
+    *   插件根据 Phase 0 建立的上下文信息，给出更智能的建议（例如：让预览图跟随存档文件移动）。
+4.  **仲裁 (Arbitrate)**: 系统选择分数最高的提案执行移动操作。
 
 ---
 
@@ -73,6 +79,18 @@ public class MyInvoicePlugin : PluginBase
     // 设置插件类型：Specific (专用) 通常比 General (通用) 权重更高
     public override PluginType Type => PluginType.Specific;
 
+    // 阶段零：全景分析
+    public override async Task AnalyzeBatchAsync(BatchContext context)
+    {
+        // 遍历本次批处理的所有文件，建立关联
+        foreach (var file in context.AllFiles)
+        {
+            // 例如：记录所有文件名，以便后续判断是否有同名文件
+            _fileNamesInBatch.Add(file.Name);
+        }
+        await Task.CompletedTask;
+    }
+
     // 阶段一：观察 (可选)
     public override async Task OnFileDetectedAsync(IFileEntry file)
     {
@@ -111,6 +129,17 @@ public class MyInvoicePlugin : PluginBase
 3.  确保已开启 **开发者模式**。
 4.  重启 SmartFileMan，在 **插件管理** 页面应能看到你的插件。
 
+> **提示：自动化部署**
+> 为了提高开发效率，你可以在 `.csproj` 文件中添加 `PostBuild` 目标，使得编译后自动将 DLL 复制到调试目录。
+> 示例代码（请根据你的实际路径修改 `DestinationFolder`）：
+> ```xml
+> <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+>     <Copy SourceFiles="$(TargetPath)" 
+>           DestinationFolder="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\" 
+>           Condition="'$(Configuration)' == 'Debug'" />
+> </Target>
+> ```
+
 ---
 
 ## 4. 核心 API 参考
@@ -131,6 +160,13 @@ public class MyInvoicePlugin : PluginBase
     *   **安全删除**：将文件移动到系统的临时回收站 (`SmartFileMan_RecycleBin`)。
     *   支持撤销。
     *   示例: `await Delete(file);`
+
+### 批处理与事务 (Batching & Transactions)
+
+`SafeContext` 支持将一系列操作作为一个原子事务进行处理，这意味着撤销时会一次性还原所有操作。
+
+*   **`SafeContext.BeginBatch(string name)`**: 开启一个具名事务。
+*   **`SafeContext.CommitBatch()`**: 提交事务。
 
 ### `IFileEntry` 对象
 
@@ -171,6 +207,12 @@ public class MyInvoicePlugin : PluginBase, IPluginUI
 ## 6. 数据存储 (LiteDB)
 
 每个插件都自动获得了一个隔离的 NoSQL 存储空间。你不需要关心数据库连接，直接使用 `Storage` 属性即可。
+
+### 数据库连接与调试
+SmartFileMan 使用 LiteDB 的 `Shared` 模式，这意味着你可以在应用运行时使用外部工具（如 LiteDB Studio）以只读或写入模式打开 `smartfileman.db` 进行调试。
+
+文件路径通常位于：`C:\Users\<User>\AppData\Local\Packages\<PackageId>\LocalState\smartfileman.db` (UWP/MAUI)
+或 `AppData\Roaming\SmartFileMan` (传统桌面)。
 
 ### 保存数据
 
@@ -237,4 +279,113 @@ dotnet run --project src/SmartFileMan.Signer -- sign "Path/To/MyPlugin.dll" "Pat
 2.  `MyPlugin.dll.sig`
 
 用户将这两个文件放入 `Plugins` 目录后，SmartFileMan 会自动验证签名并加载插件。
+
+---
+
+## 8. 文件处理完整流程
+
+当一个文件被放入 SmartFileMan 监控的文件夹（或手动扫描）后，系统会按照以下流程进行处理：
+
+### 1. 触发监控 (File Detection)
+*   `FileWatcherService` 监听到文件系统变更（例如 `Created` 或 `Renamed` 事件）。
+*   系统会进行简单的防抖处理（防止文件写入未完成时触发）。
+*   生成一个 `IFileEntry` 对象（包含路径、哈希、扩展名等信息）。
+
+### 2. 调度中心 (File Manager)
+*   文件被送入 `FileManager.ProcessFileAsync()`。
+*   系统首先检查该文件扩展名是否在**忽略列表 (Ignored Extensions)** 中。如果是，则跳过处理。
+*   接着调用 `PluginManager.GetBestRouteAsync()` 获取最佳处理方案。
+
+### 3. 插件竞价 (Plugin Bidding Loop)
+系统遍历所有已启用的插件，执行“观察-竞价”流程：
+
+*   **阶段一：观察 (Observe)**
+    *   调用插件的 `OnFileDetectedAsync(file)`。
+    *   插件可以进行轻量级检查（如更新统计），但不能修改文件。
+
+*   **阶段二：竞价 (Bid)**
+    *   调用插件的 `ProposeDestinationAsync(file)`。
+    *   插件根据文件特征判断是否能够处理。
+    *   如果能处理，返回一个 `RouteProposal` 对象，包含：
+        *   `DestinationPath`: 建议的目标路径。
+        *   `Score`: 信心分数 (0-100)。
+        *   `Description`: 处理理由（用于日志）。
+    *   如果不能处理，返回 `null`。
+
+### 4. 仲裁 (Arbitration)
+*   `PluginManager` 收集所有插件的提案。
+*   根据分数 (`Score`) 进行降序排序。
+*   选择分数最高的提案作为最终决策（Winner）。
+*   如果没有插件出价，流程结束（文件保持原样）。
+
+### 5. 执行操作 (Execution)
+*   `FileManager` 拿到最佳提案 (`Winner`)。
+*   使用 `SafeContext` 执行**安全移动**操作：
+    *   记录操作日志（用于支持撤销）。
+    *   尝试移动文件到目标路径。
+    *   如果目标文件夹不存在，会自动创建。
+    *   如果目标路径有同名文件，会自动重命名（如 `file (1).txt`）。
+*   **回调 (Callbacks)**: 如果提案包含 `OnProcessingSuccess` 委托，系统会在移动成功后执行该委托。这对于插件保存自定义索引（如音乐历史记录）非常有用。
+
+### 6. 增量更新与去重 (File Tracker)
+系统内置了 `FileTracker` 机制，确保处理过程高效且不重复：
+*   **状态检查**: 在处理前，系统会对比数据库，如果文件的路径、修改时间和大小均未改变，则视作“已处理”并跳过。
+*   **内容签名**: 成功移动后，系统会计算文件的 SHA256 哈希值并保存，即使文件被更名，系统也能识别其内容。
+
+### 示例流程图
+
+```mermaid
+graph TD
+    A[用户放入文件] --> B(FileWatcher 检测)
+    B --> C{是否在忽略列表?}
+    C -- 是 --> D[跳过]
+    C -- 否 --> E{FileTracker 检查历史}
+    E -- 已处理 --> D
+    E -- 新文件/已修改 --> F[FileManager 调度]
+    F --> G[PluginManager 广播]
+    G --> H[AnalyzeBatchAsync: 分析上下文]
+    H --> I[ProposeDestinationAsync: 竞价]
+    I --> J[仲裁: 选择得分最高者]
+    J --> K[SafeContext 执行移动]
+    K --> L[执行 OnProcessingSuccess 回调]
+    L --> M[更新 FileTracker 数据库]
+    M --> N[完成 & 记录撤销日志]
+```
+
+---
+
+## 9. 最佳实践与规范
+
+### 双语注释标准 (Bilingual Comments)
+为了保证代码的可维护性，所有公开的方法、属性和复杂的逻辑块必须包含中英文双语注释：
+```csharp
+/// <summary>
+/// 获取插件的显示名称
+/// Gets the display name of the plugin
+/// </summary>
+public string DisplayName => "...";
+```
+
+### 插件存储清理
+用户可以在应用设置中执行“清除所有数据 (Clear All Data)”。插件不应在本地保存硬编码路径的缓存，而应全部依赖 `IPluginStorage`。当用户执行清理时，`PluginManager` 会自动删除插件的所有集合数据。
+
+### UI 性能优化
+*   插件 UI (`GetView()`) 应采用延迟加载。
+*   避免在 `ProposeDestinationAsync` 中执行由于 UI 引起的耗时操作。
+*   对于大量数据的列表（如音乐库），请使用 `CollectionView` 的数据虚拟化特性。
+*   **序列化安全**: 存入 `IPluginStorage` 的对象必须是纯 POCO 类。禁止存入 `ImageSource` 等 UI 控件类型，否则会导致 `InvalidOperationException`。建议存储文件路径或 Base64 字符串，并通过 `Converter` 在 UI 层转换。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SmartFileMan.Plugins.MovieCollection.ViewModels"
+             x:Class="SmartFileMan.Plugins.MovieCollection.Views.SettingsPage">
+
+    <ContentView.Resources>
+        <Style x:Key="SectionTitleStyle" TargetType="Label">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="TextColor" Value="#FFFFFF"/>
+            <Setter Property="Margin" Value="0,16,0,8"/>
+        </Style>
+
+        <Style x:Key="DescriptionStyle" TargetType="Label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextColor" Value="#B0B0B0"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <Style x:Key="InputStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#16213E"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+    </ContentView.Resources>
+
+    <Grid BackgroundColor="#1A1A2E">
+        <ScrollView Margin="16">
+            <VerticalStackLayout>
+                <!-- TMDB API 配置 -->
+                <Label Text="TMDB API 配置" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Frame Style="{StaticResource InputStyle}">
+                    <Entry Placeholder="请输入您的TMDB API Key"
+                           Text="{Binding ApiKey}"
+                           TextColor="White"
+                           PlaceholderColor="#B0B0B0"/>
+                </Frame>
+
+                <Label Text="请访问 https://www.themoviedb.org/settings/api 获取您的API Key"
+                       Style="{StaticResource DescriptionStyle}"/>
+
+                <!-- 重命名设置 -->
+                <Label Text="重命名设置" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Frame Style="{StaticResource InputStyle}">
+                    <Entry Placeholder="重命名模板"
+                           Text="{Binding RenameTemplate}"
+                           TextColor="White"
+                           PlaceholderColor="#B0B0B0"/>
+                </Frame>
+
+                <Label Style="{StaticResource DescriptionStyle}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="可用变量: "/>
+                            <Span Text="{title}" FontAttributes="Bold"/>
+                            <Span Text=", "/>
+                            <Span Text="{season:00}" FontAttributes="Bold"/>
+                            <Span Text=", "/>
+                            <Span Text="{episode:00}" FontAttributes="Bold"/>
+                            <Span Text=", "/>
+                            <Span Text="{episode_name}" FontAttributes="Bold"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <!-- 预览 -->
+                <Frame BackgroundColor="#0F3460" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                    <Label TextColor="#B0B0B0" FontSize="12">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="预览: "/>
+                                <Span Text="{Binding PreviewFileName}" TextColor="#E94560"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Frame>
+
+                <!-- 目标文件夹 -->
+                <Label Text="目标文件夹" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Frame Style="{StaticResource InputStyle}">
+                    <Entry Placeholder="为空则原地重命名"
+                           Text="{Binding TargetFolder}"
+                           TextColor="White"
+                           PlaceholderColor="#B0B0B0"/>
+                </Frame>
+
+                <Label Text="留空将在原文件夹重命名文件"
+                       Style="{StaticResource DescriptionStyle}"/>
+
+                <!-- 操作按钮 -->
+                <HorizontalStackLayout Margin="0,24,0,0" Spacing="12">
+                    <Button Text="保存配置"
+                            Command="{Binding SaveCommand}"
+                            BackgroundColor="#E94560"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Padding="24,12"/>
+
+                    <Button Text="清除缓存"
+                            Command="{Binding ClearCacheCommand}"
+                            BackgroundColor="#0F3460"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Padding="24,12"/>
+                </HorizontalStackLayout>
+
+                <!-- 状态消息 -->
+                <Label Text="{Binding StatusMessage}"
+                       TextColor="#4CAF50"
+                       FontSize="14"
+                       Margin="0,16,0,0"
+                       IsVisible="{Binding StatusMessage, Converter={StaticResource NullToBoolConverter}}"/>
+
+                <!-- 错误消息 -->
+                <Label Text="{Binding StatusMessage}"
+                       TextColor="#F44336"
+                       FontSize="14"
+                       Margin="0,16,0,0"
+                       IsVisible="{Binding HasApiKeyError}"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentView>

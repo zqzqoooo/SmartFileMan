@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.Plugins.MovieCollection.Views.Components.SearchResultCard">
+
+    <ContentView.Resources>
+        <Style x:Key="CardStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#16213E"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="MatchScoreStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#E94560"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+        </Style>
+    </ContentView.Resources>
+
+    <Frame Style="{StaticResource CardStyle}">
+        <Grid ColumnDefinitions="60,*,Auto" RowDefinitions="Auto,Auto,Auto">
+            <!-- 海报 -->
+            <Frame CornerRadius="4" 
+                   BackgroundColor="#0F3460" 
+                   Padding="0"
+                   WidthRequest="60"
+                   HeightRequest="90"
+                   Grid.RowSpan="3">
+                <Image Source="{Binding Result.PosterPath}"
+                       Aspect="AspectFill"/>
+            </Frame>
+
+            <!-- 标题 -->
+            <Label Grid.Column="1" 
+                   Text="{Binding Result.Title}"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   Margin="12,0,0,4"/>
+
+            <!-- 详情 -->
+            <Label Grid.Column="1" Grid.Row="1"
+                   Margin="12,0,0,0"
+                   FontSize="12">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{Binding Result.MediaType}" TextColor="#533983"/>
+                        <Span Text=" | " TextColor="#B0B0B0"/>
+                        <Span Text="{Binding Result.VoteAverage, StringFormat='⭐ {0:F1}'}" TextColor="#E94560"/>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <!-- 选择按钮 -->
+            <Button Grid.Column="2" Grid.RowSpan="3"
+                    Text="选择"
+                    BackgroundColor="#E94560"
+                    TextColor="White"
+                    CornerRadius="4"
+                    VerticalOptions="Center"
+                    Padding="12,8"/>
+        </Grid>
+    </Frame>
+</ContentView>

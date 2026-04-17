@@ -14,6 +14,7 @@ namespace SmartFileMan.App.Services
         private const string KeyPluginStates = "PluginStates";
         private const string KeyPluginOrder = "PluginOrder";
         private const string KeyDeveloperMode = "DeveloperMode";
+        private const string KeyWatchedFolders = "WatchedFolders";
 
         public Task<List<string>> GetIgnoredExtensionsAsync()
         {
@@ -82,6 +83,32 @@ namespace SmartFileMan.App.Services
         {
             Preferences.Set(KeyDeveloperMode, enabled);
             return Task.CompletedTask;
+        }
+
+        public Task<List<string>> GetWatchedFoldersAsync()
+        {
+            string json = Preferences.Get(KeyWatchedFolders, "[]");
+            var list = JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+            return Task.FromResult(list);
+        }
+
+        public async Task AddWatchedFolderAsync(string path)
+        {
+            var list = await GetWatchedFoldersAsync();
+            if (!list.Contains(path))
+            {
+                list.Add(path);
+                SaveList(KeyWatchedFolders, list);
+            }
+        }
+
+        public async Task RemoveWatchedFolderAsync(string path)
+        {
+            var list = await GetWatchedFoldersAsync();
+            if (list.Remove(path))
+            {
+                SaveList(KeyWatchedFolders, list);
+            }
         }
 
         private void SaveList<T>(string key, List<T> list)

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.Plugins.AiClassifier.Views.AiClassifierSettingsView"
+             Title="AI 智能分类设置">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <!-- LLM 配置 -->
+            <Frame BorderColor="LightGray" CornerRadius="10" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="LLM 配置" FontSize="18" FontAttributes="Bold" />
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="提供者:" VerticalOptions="Center" WidthRequest="80" />
+                        <Picker x:Name="ProviderPicker" 
+                                SelectedIndex="0" 
+                                WidthRequest="150"
+                                SelectedIndexChanged="ProviderPicker_SelectedIndexChanged">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                    <x:String>MiniMax</x:String>
+                                    <x:String>OpenAI</x:String>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="API 端点:" VerticalOptions="Center" WidthRequest="80" />
+                        <Entry x:Name="EndpointEntry" 
+                               Placeholder="https://api.minimaxi.com/v1/text/chatcompletion_v2" 
+                               HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="API 密钥:" VerticalOptions="Center" WidthRequest="80" />
+                        <Entry x:Name="ApiKeyEntry" Placeholder="sk-..." 
+                               IsPassword="True" HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="模型:" VerticalOptions="Center" WidthRequest="80" />
+                        <Entry x:Name="ModelEntry" Placeholder="MiniMax-M2.7-highspeed" 
+                               HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="温度:" VerticalOptions="Center" WidthRequest="80" />
+                        <Slider x:Name="TemperatureSlider" Minimum="0.1" Maximum="1.0" 
+                                HorizontalOptions="FillAndExpand" />
+                        <Label x:Name="TemperatureLabel" Text="1.0" WidthRequest="40" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Button x:Name="TestConnectionButton" Text="测试连接" 
+                                Clicked="TestConnection_Clicked" />
+                        <Button x:Name="SaveConfigButton" Text="保存配置" 
+                                Clicked="SaveConfig_Clicked" />
+                    </HorizontalStackLayout>
+
+                    <Label x:Name="StatusLabel" Text="" TextColor="Green" />
+
+                    <Border x:Name="DebugInfoBorder" IsVisible="False" Stroke="LightGray" StrokeThickness="1" Padding="10" BackgroundColor="#2A2A2A">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="请求报文 (Request):" FontAttributes="Bold" TextColor="LightGray" FontSize="12"/>
+                            <Label x:Name="RequestInfoLabel" TextColor="White" FontSize="11" LineBreakMode="CharacterWrap" />
+                            <BoxView HeightRequest="1" Color="Gray" Margin="0,5" />
+                            <Label Text="响应内容 (Response):" FontAttributes="Bold" TextColor="LightGray" FontSize="12"/>
+                            <Label x:Name="ResponseInfoLabel" TextColor="White" FontSize="11" LineBreakMode="CharacterWrap" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 分类指令 -->
+            <Frame BorderColor="LightGray" CornerRadius="10" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="AI 整理指令 (自定义 Prompt)" FontSize="18" FontAttributes="Bold" />
+                    <Label Text="用一句话告诉 AI 你想如何整理文件。例如：'把图片放到Images文件夹，发票放到Invoices'" 
+                           FontSize="12" TextColor="Gray" />
+                    <Editor x:Name="CustomPromptEditor" 
+                            AutoSize="TextChanges" 
+                            MinHeightRequest="100" 
+                            Placeholder="在此输入你的整理指令..." />
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

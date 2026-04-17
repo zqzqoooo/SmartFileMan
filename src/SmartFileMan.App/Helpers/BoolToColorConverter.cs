@@ -3,7 +3,6 @@ using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-// 命名空间必须是 SmartFileMan.App，这样 AppShell.xaml 里的 local: 才能找到它
 namespace SmartFileMan.App
 {
     public class BoolToColorConverter : IValueConverter

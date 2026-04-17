@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.Plugins.MovieCollection.Views.Components.EpisodeListItem">
+
+    <ContentView.Resources>
+        <Style x:Key="ProcessedStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#0F3460"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8"/>
+        </Style>
+
+        <Style x:Key="PendingStyle" TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="#16213E"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8"/>
+        </Style>
+    </ContentView.Resources>
+
+    <Frame BackgroundColor="#16213E" CornerRadius="4" Padding="8">
+        <Grid ColumnDefinitions="50,*,80,30">
+            <!-- 集号 -->
+            <Label Text="{Binding EpisodeNumber, StringFormat='E{0:00}'}"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="#E94560"
+                   VerticalOptions="Center"/>
+
+            <!-- 集标题 -->
+            <Label Grid.Column="1"
+                   Text="{Binding Name}"
+                   FontSize="14"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   MaxLines="1"/>
+
+            <!-- 播出日期 -->
+            <Label Grid.Column="2"
+                   Text="{Binding AirDate, StringFormat='{}{0:MM-dd}'}"
+                   FontSize="12"
+                   TextColor="#B0B0B0"
+                   HorizontalOptions="End"
+                   VerticalOptions="Center"/>
+
+            <!-- 状态指示 -->
+            <Label Grid.Column="3"
+                   Text="✓"
+                   FontSize="16"
+                   TextColor="#4CAF50"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+        </Grid>
+    </Frame>
+</ContentView>

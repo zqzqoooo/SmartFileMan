@@ -1,9 +1,15 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/SmartFileMan.App/SmartFileMan.App.csproj" />
+    <Project Path="src/SmartFileMan.App/SmartFileMan.App.csproj">
+      <Deploy Solution="Debug|*" />
+    </Project>
     <Project Path="src/SmartFileMan.Contracts/SmartFileMan.Contracts.csproj" />
     <Project Path="src/SmartFileMan.Core/SmartFileMan.Core.csproj" />
+    <Project Path="src/SmartFileMan.Plugins.AiClassifier/SmartFileMan.Plugins.AiClassifier.csproj" />
     <Project Path="src/SmartFileMan.Plugins.Basic/SmartFileMan.Plugins.Basic.csproj" />
+    <Project Path="src/SmartFileMan.Plugins.Debug/SmartFileMan.Plugins.Debug.csproj" />
+    <Project Path="src/SmartFileMan.Plugins.MovieCollection/SmartFileMan.Plugins.MovieCollection.csproj" />
+    <Project Path="src/SmartFileMan.Plugins.Music/SmartFileMan.Plugins.Music.csproj" />
     <Project Path="src/SmartFileMan.Sdk/SmartFileMan.Sdk.csproj" />
     <Project Path="src/SmartFileMan.Signer/SmartFileMan.Signer.csproj" />
   </Folder>

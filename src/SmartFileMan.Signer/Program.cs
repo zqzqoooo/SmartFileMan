@@ -21,6 +21,8 @@ namespace SmartFileMan.Signer
                 switch (command)
                 {
                     case "keygen":
+                        // 生成密钥对
+                        // Generate Key Pair
                         GenerateKeys(args.Length > 1 ? args[1] : ".");
                         break;
                     case "sign":
@@ -30,6 +32,8 @@ namespace SmartFileMan.Signer
                             ShowHelp();
                             return;
                         }
+                        // 签署文件
+                        // Sign File
                         SignFile(args[1], args[2]);
                         break;
                     default:
@@ -54,10 +58,14 @@ namespace SmartFileMan.Signer
 
         static void GenerateKeys(string outputDir)
         {
+            // 确保输出目录存在
+            // Ensure output directory exists
             if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
 
             using (var rsa = RSA.Create(2048))
             {
+                // 导出为 XML 格式 (兼容性好)
+                // Export as XML format (Good compatibility)
                 string privateKey = rsa.ToXmlString(true);
                 string publicKey = rsa.ToXmlString(false);
 
@@ -85,6 +93,9 @@ namespace SmartFileMan.Signer
                 rsa.FromXmlString(privateKey);
                 
                 byte[] data = File.ReadAllBytes(dllPath);
+                
+                // 使用 SHA256 签名
+                // Sign data using SHA256
                 byte[] signature = rsa.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 
                 string sigPath = dllPath + ".sig";

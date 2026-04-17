@@ -1,4 +1,4 @@
-﻿using SmartFileMan.Contracts;
+﻿using SmartFileMan.Contracts.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,34 +12,38 @@ namespace SmartFileMan.Core.Services
         private readonly PluginVerifier _verifier = new PluginVerifier();
 
         /// <summary>
-        /// 从指定文件夹加载所有插件
+        /// Load all plugins from the specified folder
         /// </summary>
-        /// <param name="folderPath">插件文件夹路径</param>
-        /// <param name="bypassSignatureCheck">是否跳过签名检查 (开发者模式)</param>
+        /// <param name="folderPath">插件文件夹路径 / Plugin folder path</param>
+        /// <param name="bypassSignatureCheck">是否跳过签名检查 (开发者模式) / Whether to bypass signature check (Developer Mode)</param>
         public IEnumerable<IPlugin> LoadPluginsFromFolder(string folderPath, bool bypassSignatureCheck = false)
         {
-            // 确保文件夹存在
+            // Ensure the folder exists
             if (!Directory.Exists(folderPath))
             {
-                // 如果不存在，尝试创建一个空的，防止报错
+                // If it doesn't exist, try to create an empty one to prevent errors
                 try { Directory.CreateDirectory(folderPath); } catch { }
                 yield break;
             }
 
-            // 1. 扫描所有 DLL 文件
-            var dllFiles = Directory.GetFiles(folderPath, "*.dll");
+            // Scan for DLL files in all subdirectories (each plugin can be in its own subdirectory)
+            var dllFiles = Directory.GetFiles(folderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (var dllPath in dllFiles)
             {
+                // Skip non-plugin dependencies
+                var fileName = Path.GetFileName(dllPath);
+                if (fileName.Equals("TagLibSharp.dll", StringComparison.OrdinalIgnoreCase)) continue;
+
                 IPlugin? plugin = null;
                 try
                 {
-                    // 跳过并非插件的系统文件 (比如依赖库)
+                    // Skip system files that are not plugins
                     if (Path.GetFileName(dllPath).StartsWith("System.") ||
                         Path.GetFileName(dllPath).StartsWith("Microsoft."))
                         continue;
 
-                    // 安全校验：验证签名
+                    // Security Check: Verify signature
                     if (!bypassSignatureCheck && !_verifier.VerifyPlugin(dllPath))
                     {
                         continue;
@@ -49,8 +53,8 @@ namespace SmartFileMan.Core.Services
                 }
                 catch (Exception ex)
                 {
-                    // 这里可以记录日志：Plugin load failed: ex.Message
-                    System.Diagnostics.Debug.WriteLine($"加载插件失败 {dllPath}: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Failed to load plugin {dllPath}: {ex.Message}");
+                    Console.WriteLine($"[Error] Failed to load plugin {dllPath}: {ex}");
                 }
 
                 if (plugin != null)
@@ -60,21 +64,53 @@ namespace SmartFileMan.Core.Services
             }
         }
 
+        /// <summary>
+        /// 尝试加载单个插件文件
+        /// Attempt to load a single plugin file
+        /// </summary>
+        public IPlugin? LoadPluginFromFile(string dllPath, bool bypassSignatureCheck = false)
+        {
+            if (!File.Exists(dllPath)) return null;
+
+             // 忽略系统文件
+             // Ignored system files
+            string fileName = Path.GetFileName(dllPath);
+            if (fileName.StartsWith("System.") || fileName.StartsWith("Microsoft.")) return null;
+
+            // 安全检查
+            // Security Check
+            if (!bypassSignatureCheck && !_verifier.VerifyPlugin(dllPath))
+            {
+                System.Diagnostics.Debug.WriteLine($"[Security] Signature verification failed for {fileName}");
+                return null;
+            }
+
+            try
+            {
+                return LoadPlugin(dllPath);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to load {fileName}: {ex.Message}");
+                return null;
+            }
+        }
+
         private IPlugin? LoadPlugin(string pluginPath)
         {
-            // 1. 创建独立上下文
+            // Create a separate context
             var loadContext = new PluginLoadContext(pluginPath);
 
-            // 2. 加载程序集 (读取 DLL)
+            // Load assembly (Read DLL)
             var assembly = loadContext.LoadFromAssemblyPath(pluginPath);
 
-            // 3. 寻找实现了 IPlugin 接口的类
+            // Find classes that implement the IPlugin interface
             foreach (Type type in assembly.GetTypes())
             {
                 if (typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
                 {
-                    // 4. 创建实例
-                    // Activator.CreateInstance 相当于 new Class()
+                    // Create instance
+                    // Activator.CreateInstance is equivalent to new Class()
                     if (Activator.CreateInstance(type) is IPlugin pluginInstance)
                     {
                         return pluginInstance;

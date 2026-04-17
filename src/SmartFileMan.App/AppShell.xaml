@@ -7,19 +7,28 @@
     FlyoutBehavior="Flyout"
     FlyoutBackgroundColor="{AppThemeBinding Light=#f0f0f0, Dark=#1f1f1f}">
 
-    <Shell.FlyoutHeader>
-        <VerticalStackLayout Padding="20" BackgroundColor="#512BD4">
-            <Label Text="Smart Manager" TextColor="White" FontSize="20" FontAttributes="Bold"/>
-            <Label Text="v1.0.0" TextColor="White" FontSize="12"/>
+    <!-- Top Part: Dynamic Plugin List will be added here by C# code -->
+    <!-- The "FlyoutHeader" is removed as per request to move title to Settings page -->
+
+    <!-- FlyoutFooter for Settings and Exit -->
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout BackgroundColor="{AppThemeBinding Light=#e0e0e0, Dark=#2d2d2d}">
+            <Grid Padding="15" ColumnDefinitions="40, *">
+                <Image Source="dotnet_bot.png" HeightRequest="24" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="Settings" VerticalOptions="Center" FontSize="16" />
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSettingsClicked" />
+                </Grid.GestureRecognizers>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{AppThemeBinding Light=Gray, Dark=#404040}" />
+            <Grid Padding="15" ColumnDefinitions="40, *">
+                <Image Source="dotnet_bot.png" HeightRequest="24" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="Exit" VerticalOptions="Center" FontSize="16" />
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnExitClicked" />
+                </Grid.GestureRecognizers>
+            </Grid>
         </VerticalStackLayout>
-    </Shell.FlyoutHeader>
-
-    <FlyoutItem Title="工作台" Icon="dotnet_bot.png">
-        <ShellContent Title="主页" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
-    </FlyoutItem>
-
-    <MenuItem Text="插件管理" IconImageSource="dotnet_bot.png" Clicked="OnPluginManagerClicked" />
-    <MenuItem Text="设置" IconImageSource="dotnet_bot.png" Clicked="OnSettingsClicked" />
-    <MenuItem Text="退出" Clicked="OnExitClicked" />
+    </Shell.FlyoutFooter>
 
 </Shell>

@@ -3,23 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:SmartFileMan.App"
              x:Class="SmartFileMan.App.MainPage"
-             Title="SmartFileMan">
+             Title="SmartFileMan"
+             BackgroundColor="{AppThemeBinding Light=#F3F3F3, Dark=#121212}">
 
-    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
-        <HorizontalStackLayout Grid.Row="0" Spacing="10">
-            <Label x:Name="LblCurrentPlugin" Text="test" VerticalOptions="Center" FontAttributes="Bold"/>
-        </HorizontalStackLayout>
-
-        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
-            <Image Source="dotnet_bot.png" HeightRequest="150" HorizontalOptions="Center" />
-            <Label Text="1" FontSize="24" HorizontalOptions="Center" />
-            <Label Text="1" FontSize="16" TextColor="Gray" HorizontalOptions="Center" />
-            
-            <Button x:Name="BtnStart" Text="开始整理桌面 (Start Organizing Desktop)" Clicked="OnStartClicked" />
-            <Button x:Name="BtnUndo" Text="撤销上一步 (Undo)" Clicked="OnUndoClicked" BackgroundColor="Gray"/>
+    <Grid>
+        <!-- Background Info -->
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+            <Label Text="SmartFileMan" 
+                   FontSize="40" 
+                   FontAttributes="Bold" 
+                   TextColor="{AppThemeBinding Light=#E0E0E0, Dark=#333}" 
+                   HorizontalOptions="Center" />
+            <Label Text="v1.0.0" 
+                   FontSize="16" 
+                   TextColor="{AppThemeBinding Light=#CCCCCC, Dark=#444}" 
+                   HorizontalOptions="Center" 
+                   FontFamily="Consolas"/>
         </VerticalStackLayout>
-        
-        <Label Grid.Row="2" Text="Ready" FontSize="12" TextColor="Gray"/>
     </Grid>
 
 </ContentPage>

@@ -1,5 +1,5 @@
 ﻿using LiteDB;
-using SmartFileMan.Contracts;
+using SmartFileMan.Contracts.Storage;
 using System.IO;
 
 namespace SmartFileMan.Core.Services
@@ -30,9 +30,12 @@ namespace SmartFileMan.Core.Services
         /// <param name="value">键值 / Storage value</param>
         public void Save<T>(string key, T value)
         {
-            // 使用插件 ID 作为集合名称，实现不同插件间的数据隔离
-            // Use Plugin ID as the collection name to achieve data isolation between different plugins
-            var col = _db.GetCollection<EntryWrapper<T>>(_pluginId);
+            // 使用插件 ID 作为集合名称，但需要移除无效字符 (如 .)
+            // Use Plugin ID as the collection name, but remove invalid chars (like .)
+            // LiteDB only allows [a-Z$_]
+            string safeCollectionName = _pluginId.Replace(".", "_").Replace("-", "_");
+            
+            var col = _db.GetCollection<EntryWrapper<T>>(safeCollectionName);
 
             // 更新或插入：如果键存在则更新，不存在则插入
             // Upsert: Update if the key exists, otherwise insert
@@ -49,18 +52,14 @@ namespace SmartFileMan.Core.Services
         /// <returns>加载的数据或默认值 / Loaded data or default value</returns>
         public T? Load<T>(string key, T? defaultValue = default)
         {
-            // 获取插件专属的集合
-            // Get the plugin-specific collection
-            var col = _db.GetCollection<EntryWrapper<T>>(_pluginId);
-            var entry = col.FindById(key);
-
-            // 如果找到记录则返回其值，否则返回默认值
-            // Return its value if record is found, otherwise return the default value
-            if (entry != null)
+            string safeCollectionName = _pluginId.Replace(".", "_").Replace("-", "_");
+            var col = _db.GetCollection<EntryWrapper<T>>(safeCollectionName);
+            var doc = col.FindById(key);
+            
+            if (doc != null)
             {
-                return entry.Value;
+                return doc.Value;
             }
-
             return defaultValue;
         }
 

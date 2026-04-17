@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartFileMan.Plugins.AiClassifier.Views.RuleEditorView"
+             Title="编辑分类规则">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <HorizontalStackLayout Spacing="10">
+                <Label Text="规则名称:" VerticalOptions="Center" WidthRequest="80" />
+                <Entry x:Name="NameEntry" Placeholder="例如：发票分类" 
+                       HorizontalOptions="FillAndExpand" />
+            </HorizontalStackLayout>
+
+            <Label Text="匹配条件 (可选)" FontAttributes="Bold" />
+
+            <Frame BorderColor="LightGray" CornerRadius="5" Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="扩展名:" VerticalOptions="Center" WidthRequest="80" />
+                        <Entry x:Name="ExtensionsEntry" Placeholder=".pdf, .docx" 
+                               HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="关键词:" VerticalOptions="Center" WidthRequest="80" />
+                        <Entry x:Name="KeywordsEntry" Placeholder="发票, invoice" 
+                               HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="分类规则 (自然语言)" FontAttributes="Bold" />
+
+            <Frame BorderColor="LightGray" CornerRadius="5" Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <Editor x:Name="PatternEditor" 
+                            Placeholder="例如：将包含'发票'的文件移动到 Documents/Invoices 目录"
+                            HeightRequest="100" />
+                    <Label Text="提示：使用自然语言描述分类逻辑，AI 会理解并执行分类操作" 
+                           FontSize="12" TextColor="Gray" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <HorizontalStackLayout Spacing="10">
+                <Label Text="优先级:" VerticalOptions="Center" WidthRequest="80" />
+                <Slider x:Name="PrioritySlider" Minimum="0" Maximum="100" 
+                        WidthRequest="200" />
+                <Label x:Name="PriorityLabel" Text="50" WidthRequest="40" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                <Button x:Name="SaveButton" Text="保存" Clicked="Save_Clicked" 
+                        WidthRequest="100" />
+                <Button x:Name="CancelButton" Text="取消" Clicked="Cancel_Clicked" 
+                        WidthRequest="100" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

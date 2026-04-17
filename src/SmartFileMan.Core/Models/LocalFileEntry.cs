@@ -17,13 +17,11 @@ namespace SmartFileMan.Core.Models
             if (string.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentNullException(nameof(filePath));
             _fileInfo = new FileInfo(filePath);
-
-            // 初始化字典
-            Properties = new Dictionary<string, object>();
         }
 
         // 基础属性实现
-        public string Id => _fileInfo.FullName;
+        // Basic Property Implementation
+        public string Id => _fileInfo.FullName; // 使用全路径作为唯一标识 / Use full path as unique ID
         public string Name => _fileInfo.Name;
         public string Extension => _fileInfo.Extension.ToLowerInvariant();
         public string DirectoryPath => _fileInfo.DirectoryName ?? string.Empty;
@@ -32,32 +30,36 @@ namespace SmartFileMan.Core.Models
         public DateTime CreationTime => _fileInfo.CreationTime;
         public DateTime LastWriteTime => _fileInfo.LastWriteTime;
 
-        // 1. 实现万能属性字典
-        public IDictionary<string, object> Properties { get; }
+        // 扩展属性字典 (如 ID3 标签、图片尺寸)
+        // Extended properties dictionary (e.g., ID3 tags, image dimensions)
+        public IDictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+
+        public Task<T?> GetMetadataAsync<T>() where T : class
+        {
+            // 以后可以接入 Windows Property System 或 Image/Video 库
+            // Future integration with Windows Property System or Image/Video libraries
+            return Task.FromResult<T?>(null);
+        }
 
         public async Task<string> GetHashAsync()
         {
-            if (!string.IsNullOrEmpty(_cachedHash)) return _cachedHash;
+            // 缓存 Hash 避免重复计算
+            // Cache Hash to avoid re-calculation
+            if (_cachedHash != null) return _cachedHash;
 
-            // 之前的问题：计算了哈希但没有存进 _cachedHash 变量里
-            // 修复如下：
-            _cachedHash = await Task.Run(() =>
+            return await Task.Run(() =>
             {
                 using var stream = _fileInfo.OpenRead();
                 using var sha256 = SHA256.Create();
-                return BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                var bytes = sha256.ComputeHash(stream);
+                _cachedHash = BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
+                return _cachedHash;
             });
-
-            return _cachedHash;
         }
 
-        public Task<Stream> OpenReadAsync() => Task.FromResult<Stream>(_fileInfo.OpenRead());
-
-        // 2. 实现泛型元数据接口 (签名必须完全一致，包括 where T : class)
-        public Task<T?> GetMetadataAsync<T>() where T : class
+        public Task<Stream> OpenReadAsync()
         {
-            // 暂时返回 null，表示没有特定元数据
-            return Task.FromResult<T?>(null);
+            return Task.FromResult<Stream>(_fileInfo.OpenRead());
         }
     }
 }

@@ -21,5 +21,10 @@ namespace SmartFileMan.Contracts.Services
         // 开发者模式
         bool IsDeveloperModeEnabled();
         Task SetDeveloperModeEnabledAsync(bool enabled);
+
+        // 监控文件夹
+        Task<List<string>> GetWatchedFoldersAsync();
+        Task AddWatchedFolderAsync(string path);
+        Task RemoveWatchedFolderAsync(string path);
     }
 }

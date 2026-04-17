@@ -23,6 +23,12 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="dotnet run --project &quot;$(SolutionDir)src\SmartFileMan.Signer\SmartFileMan.Signer.csproj&quot; -- sign &quot;$(TargetPath)&quot; &quot;$(SolutionDir)Keys\private.key&quot;" />
+    
+    <!-- Auto-deploy to AppX Plugins folder for Debugging -->
+    <ItemGroup>
+        <BasicPluginFiles Include="$(TargetPath);$(TargetPath).sig" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BasicPluginFiles)" DestinationFolder="$(SolutionDir)src\SmartFileMan.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\AppX\Plugins\$(ProjectName)\" Condition="'$(Configuration)' == 'Debug'" />
   </Target>
 
 </Project>
